@@ -33,6 +33,32 @@ jobs:
         shell: pwsh
         run: npm version "0.1.${{ github.run_number }}" --no-git-tag-version
 
+      - name: Create GitHub release tag
+        shell: pwsh
+        run: |
+          $version = (node -p "require('./package.json').version").Trim()
+          if ($LASTEXITCODE -ne 0) { throw "Could not read the package version." }
+          $tag = "v$version"
+          $remoteTag = git ls-remote --tags origin "refs/tags/$tag"
+          if ($LASTEXITCODE -ne 0) { throw "Could not check whether release tag $tag exists on origin." }
+
+          if ($remoteTag) {
+            git fetch --no-tags origin "+refs/tags/${tag}:refs/tags/${tag}"
+            if ($LASTEXITCODE -ne 0) { throw "Could not fetch release tag $tag." }
+            $tagCommit = (git rev-parse "$($tag)^{commit}").Trim()
+            if ($LASTEXITCODE -ne 0) { throw "Release tag $tag does not resolve to a commit." }
+            $headCommit = (git rev-parse HEAD).Trim()
+            if ($LASTEXITCODE -ne 0) { throw "Could not resolve the checked-out commit." }
+            if ($tagCommit -ne $headCommit) {
+              throw "Release tag $tag points to $tagCommit, not the checked-out commit $headCommit."
+            }
+          } else {
+            git tag --force $tag HEAD
+            if ($LASTEXITCODE -ne 0) { throw "Could not create release tag $tag." }
+            git push origin "refs/tags/$tag"
+            if ($LASTEXITCODE -ne 0) { throw "Could not push release tag $tag to origin." }
+          }
+
       - name: Package and publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
