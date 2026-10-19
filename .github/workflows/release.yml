@@ -26,6 +26,9 @@ jobs:
           npm run lint
           npm test -- --run
 
+      - name: Build app
+        run: npm run build
+
       - name: Assign release version
         shell: pwsh
         run: npm version "0.1.${{ github.run_number }}" --no-git-tag-version
