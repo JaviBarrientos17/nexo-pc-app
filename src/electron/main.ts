@@ -115,23 +115,18 @@ function configureApplicationMenu() {
   );
 }
 
+class WindowsTempUpdater extends NsisUpdater {
+  constructor() {
+    super();
+    Object.defineProperty(this.app, "baseCachePath", {
+      configurable: true,
+      get: () => app.getPath("temp")
+    });
+  }
+}
+
 const updater = process.platform === "win32"
-  ? new NsisUpdater(undefined, {
-      get version() { return app.getVersion(); },
-      get name() { return app.getName(); },
-      get isPackaged() { return app.isPackaged; },
-      get appUpdateConfigPath() {
-        return app.isPackaged
-          ? path.join(process.resourcesPath, "app-update.yml")
-          : path.join(app.getAppPath(), "dev-app-update.yml");
-      },
-      get userDataPath() { return app.getPath("userData"); },
-      get baseCachePath() { return app.getPath("temp"); },
-      whenReady: () => app.whenReady(),
-      relaunch: () => app.relaunch(),
-      quit: () => app.quit(),
-      onQuit: (handler) => app.once("quit", (_event, exitCode) => handler(exitCode))
-    })
+  ? new WindowsTempUpdater()
   : autoUpdater;
 
 function sendUpdate(notice: UpdateNotice) {
