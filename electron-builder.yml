@@ -17,10 +17,11 @@ win:
     - target: nsis
       arch:
         - x64
+        - ia32
 nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
   installerIcon: assets/icon.ico
   uninstallerIcon: assets/icon.ico
-  artifactName: ${productName}-Setup-${version}.${ext}
+  artifactName: ${productName}-Setup-${version}-${arch}.${ext}

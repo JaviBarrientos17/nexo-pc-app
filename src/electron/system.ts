@@ -13,6 +13,14 @@ import type {
 
 const execFileAsync = promisify(execFile);
 
+export function isSupportedWindowsVersion(release: string): boolean {
+  const match = /^10\.0\.(\d+)$/.exec(release);
+  if (!match) return false;
+
+  const build = Number(match[1]);
+  return (build >= 17763 && build <= 19045) || build >= 22000;
+}
+
 export function normalizePowerShellArray<T>(
   value: T | T[] | null | undefined,
 ): T[] {

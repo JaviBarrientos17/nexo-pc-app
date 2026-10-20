@@ -1,8 +1,9 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu } from "electron";
 import { writeFile } from "node:fs/promises";
+import { release as getOsRelease } from "node:os";
 import path from "node:path";
 import { autoUpdater, NsisUpdater } from "electron-updater";
-import { getHardwareReport, getSystemSnapshot } from "./system";
+import { getHardwareReport, getSystemSnapshot, isSupportedWindowsVersion } from "./system";
 import type {
   CleanupItem,
   ExportFileRequest,
@@ -286,6 +287,18 @@ ipcMain.handle("export:file", async (event, request: ExportFileRequest): Promise
 });
 
 app.whenReady().then(() => {
+  if (process.platform !== "win32" || !isSupportedWindowsVersion(getOsRelease())) {
+    const spanish = app.getLocale().toLowerCase().startsWith("es");
+    dialog.showErrorBox(
+      spanish ? "Sistema no compatible" : "Unsupported system",
+      spanish
+        ? "Nexo PC requiere Windows 10 versión 1809–22H2 o Windows 11."
+        : "Nexo PC requires Windows 10 version 1809–22H2 or Windows 11.",
+    );
+    app.quit();
+    return;
+  }
+
   configureApplicationMenu();
   configureUpdates();
   createWindow();

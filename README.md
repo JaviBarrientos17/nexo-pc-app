@@ -42,10 +42,12 @@ Consulta la previsualización de elementos que se pueden revisar. Esta versión 
 - **Exportación:** exporta los datos de la vista actual como TXT o CSV desde el menú de opciones.
 
 Los datos de diagnóstico se recopilan localmente en Windows mediante CIM/WMI. La interfaz se actualiza automáticamente y se adapta a distintos tamaños de pantalla.
+Para reducir el uso de CPU y evitar consultas innecesarias, la telemetría se actualiza cada 15 segundos (30 segundos en equipos con 4 hilos o menos) y se pausa mientras la ventana está oculta.
 
 ## Requisitos
 
-- Windows
+- Windows 10 versión 1809–22H2 (compilaciones 17763–19045) o Windows 11.
+- Instaladores disponibles para x64 y x86 (32 bits); Windows 11 solo está disponible en x64.
 - Node.js y npm
 
 ## Iniciar en desarrollo
@@ -71,6 +73,6 @@ npm run build
 npm run package:win
 ```
 
-El empaquetado usa NSIS. Si se configuran los secretos de firma `WIN_CSC_LINK` y `WIN_CSC_KEY_PASSWORD`, electron-builder firma el instalador; sin ellos, genera un instalador sin firmar. El workflow de GitHub Actions actualiza y confirma la versión de `package.json` y `package-lock.json` como `0.1.<número de ejecución>` antes de publicar una release al recibir cambios en `main`.
+El empaquetado usa NSIS y genera instaladores separados para x64 y x86 (32 bits), con la arquitectura indicada en el nombre del archivo. Si se configuran los secretos de firma `WIN_CSC_LINK` y `WIN_CSC_KEY_PASSWORD`, electron-builder firma los instaladores; sin ellos, los genera sin firmar. El workflow de GitHub Actions actualiza y confirma la versión de `package.json` y `package-lock.json` como `0.1.<número de ejecución>` antes de publicar una release al recibir cambios en `main`.
 
 Para consultar el alcance y las decisiones del producto, revisa [docs/PLAN_INICIAL.md](docs/PLAN_INICIAL.md).

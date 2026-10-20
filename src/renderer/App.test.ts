@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { getInitialLanguage, translateText } from "./localization";
-import { normalizeCpuUsage, normalizePowerShellArray } from "../electron/system";
+import {
+  isSupportedWindowsVersion,
+  normalizeCpuUsage,
+  normalizePowerShellArray,
+} from "../electron/system";
 
 describe("Nexo PC", () => {
   it("preserves zero CPU readings and bounds invalid readings", () => {
@@ -16,6 +20,18 @@ describe("Nexo PC", () => {
     expect(normalizePowerShellArray({ slot: "A1" })).toEqual([{ slot: "A1" }]);
     expect(normalizePowerShellArray([{ slot: "A1" }, { slot: "B1" }])).toHaveLength(2);
     expect(normalizePowerShellArray(null)).toEqual([]);
+  });
+
+  it("supports Windows 10 1809 and later Windows 10/11 builds only", () => {
+    expect(isSupportedWindowsVersion("10.0.17763")).toBe(true);
+    expect(isSupportedWindowsVersion("10.0.19045")).toBe(true);
+    expect(isSupportedWindowsVersion("10.0.22000")).toBe(true);
+    expect(isSupportedWindowsVersion("10.0.26100")).toBe(true);
+    expect(isSupportedWindowsVersion("10.0.17762")).toBe(false);
+    expect(isSupportedWindowsVersion("10.0.19046")).toBe(false);
+    expect(isSupportedWindowsVersion("10.0.21999")).toBe(false);
+    expect(isSupportedWindowsVersion("6.3.9600")).toBe(false);
+    expect(isSupportedWindowsVersion("not-a-version")).toBe(false);
   });
 
   it("uses an explicit language preference before the device language", () => {

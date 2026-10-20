@@ -391,14 +391,27 @@ export function App() {
   useEffect(() => {
     let active = true;
     let timer = 0;
-    const refresh = async () => {
-      await loadData();
-      if (active) timer = window.setTimeout(() => void refresh(), 5000);
+    const refreshInterval = navigator.hardwareConcurrency <= 4 ? 30_000 : 15_000;
+    const scheduleRefresh = () => {
+      if (!active || document.visibilityState !== "visible") return;
+      timer = window.setTimeout(() => void refresh(), refreshInterval);
     };
+    const refresh = async () => {
+      if (!active || document.visibilityState !== "visible") return;
+      await loadData();
+      scheduleRefresh();
+    };
+    const handleVisibilityChange = () => {
+      window.clearTimeout(timer);
+      if (document.visibilityState === "visible") void refresh();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     void refresh();
     return () => {
       active = false;
       window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [loadData]);
 
