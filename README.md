@@ -73,6 +73,6 @@ npm run build
 npm run package:win
 ```
 
-El empaquetado usa NSIS y genera un instalador `.exe` para x64, con la arquitectura indicada en el nombre del archivo. El workflow verifica y adjunta ese `.exe` a la release; electron-builder también genera un `.blockmap` auxiliar para las actualizaciones diferenciales. Si se configuran los secretos de firma `WIN_CSC_LINK` y `WIN_CSC_KEY_PASSWORD`, electron-builder firma el instalador; sin ellos, lo genera sin firmar. El workflow de GitHub Actions actualiza y confirma la versión de `package.json` y `package-lock.json` como `0.1.<número de ejecución>` antes de publicar una release al recibir cambios en `main`.
+El empaquetado usa NSIS y genera un instalador `.exe` para x64, con la arquitectura indicada en el nombre del archivo. El workflow valida que `latest.yml` corresponda a la versión empaquetada y adjunta tanto ese índice como el `.exe` a la release; electron-builder también genera un `.blockmap` auxiliar para las actualizaciones diferenciales. Si se configuran los secretos de firma `WIN_CSC_LINK` y `WIN_CSC_KEY_PASSWORD`, electron-builder firma el instalador; sin ellos, lo genera sin firmar. El workflow de GitHub Actions actualiza y confirma la versión de `package.json` y `package-lock.json` como `0.1.<número de ejecución>` antes de publicar una release al recibir cambios en `main`.
 
 Para consultar el alcance y las decisiones del producto, revisa [docs/PLAN_INICIAL.md](docs/PLAN_INICIAL.md).

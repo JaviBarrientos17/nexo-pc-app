@@ -84,7 +84,7 @@ jobs:
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
         run: npx electron-builder --win nsis --x64 --publish always
 
-      - name: Ensure installer is attached to the release
+      - name: Ensure installer and updater metadata are attached to the release
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -96,6 +96,19 @@ jobs:
 
           $version = (node -p "require('./package.json').version").Trim()
           if ($LASTEXITCODE -ne 0) { throw "Could not read the package version." }
+
+          $metadata = Join-Path "release" "latest.yml"
+          if (-not (Test-Path -LiteralPath $metadata -PathType Leaf)) {
+            throw "electron-builder did not generate release/latest.yml."
+          }
+
+          $metadataContent = Get-Content -LiteralPath $metadata -Raw
+          if ($metadataContent -notmatch "(?m)^version:\s*$([regex]::Escape($version))\s*$") {
+            throw "release/latest.yml does not describe version $version."
+          }
+
+          gh release upload "v$version" $metadata --clobber
+          if ($LASTEXITCODE -ne 0) { throw "Could not attach updater metadata to release v$version." }
 
           gh release upload "v$version" $installers[0].FullName --clobber
           if ($LASTEXITCODE -ne 0) { throw "Could not attach the Windows installer to release v$version." }

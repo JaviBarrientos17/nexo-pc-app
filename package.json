@@ -4,7 +4,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/JaviBarrientos17/pc-management-app.git"
+    "url": "https://github.com/JaviBarrientos17/nexo-pc-app.git"
   },
   "description": "Monitor your PC's hardware sensors, review system health and storage, and explore safe maintenance options—all locally on Windows.",
   "main": "dist-electron/electron/main.js",
