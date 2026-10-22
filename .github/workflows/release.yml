@@ -83,3 +83,19 @@ jobs:
           WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
         run: npx electron-builder --win nsis --x64 --publish always
+
+      - name: Ensure installer is attached to the release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $installers = @(Get-ChildItem -Path "release" -Filter "*.exe" -File)
+          if ($installers.Count -ne 1) {
+            throw "Expected exactly one Windows installer in the release folder, found $($installers.Count)."
+          }
+
+          $version = (node -p "require('./package.json').version").Trim()
+          if ($LASTEXITCODE -ne 0) { throw "Could not read the package version." }
+
+          gh release upload "v$version" $installers[0].FullName --clobber
+          if ($LASTEXITCODE -ne 0) { throw "Could not attach the Windows installer to release v$version." }
