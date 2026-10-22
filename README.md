@@ -4,7 +4,7 @@
 
 ## Capturas
 
-Las siguientes imágenes se capturaron desde la aplicación de escritorio en ejecución.
+Las capturas muestran las siete secciones principales de Nexo PC. Los valores de hardware son de ejemplo y pueden variar según el equipo.
 
 ### Resumen
 
@@ -18,6 +18,12 @@ Consulta los componentes y las lecturas disponibles, filtra por categoría, busc
 
 ![Hardware y sensores de Nexo PC](assets/screenshots/hardware.png)
 
+### Salud del sistema
+
+Estado general y comprobaciones disponibles de procesador, memoria, almacenamiento y placa base.
+
+![Salud del sistema en Nexo PC](assets/screenshots/salud-sistema.png)
+
 ### Unidades
 
 Revisa el espacio de almacenamiento y los detalles de las unidades físicas y lógicas.
@@ -29,6 +35,18 @@ Revisa el espacio de almacenamiento y los detalles de las unidades físicas y l�
 Consulta la previsualización de elementos que se pueden revisar. Esta versión no elimina archivos.
 
 ![Previsualización de limpieza de Nexo PC](assets/screenshots/limpieza.png)
+
+### Actualizaciones
+
+Consulta el estado de la aplicación y busca actualizaciones disponibles.
+
+![Actualizaciones de Nexo PC](assets/screenshots/actualizaciones.png)
+
+### Ajustes
+
+Configura el idioma y la apariencia, y consulta las opciones de actualización y privacidad.
+
+![Ajustes de Nexo PC](assets/screenshots/ajustes.png)
 
 ## Funciones
 
