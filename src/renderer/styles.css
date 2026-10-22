@@ -3299,6 +3299,28 @@ html[data-theme="dark"] .brand-name {
   color: #676d77;
 }
 
+.update-download-progress {
+  margin-top: 16px;
+}
+
+.update-download-progress p {
+  margin: 0 0 8px;
+  color: #676d77;
+}
+
+.update-download-progress progress,
+.update-progress {
+  display: block;
+  width: 100%;
+  height: 8px;
+  accent-color: #4267e8;
+}
+
+.update-download-error {
+  margin-top: 16px !important;
+  color: #c33b46 !important;
+}
+
 .update-dialog-actions,
 .settings-update-actions {
   display: flex;
@@ -3331,6 +3353,10 @@ html[data-theme="dark"] .update-dialog {
 }
 
 html[data-theme="dark"] .update-dialog > p:not(.section-kicker) {
+  color: #b0bdca;
+}
+
+html[data-theme="dark"] .update-download-progress p {
   color: #b0bdca;
 }
 

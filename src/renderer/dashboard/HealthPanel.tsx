@@ -8,10 +8,11 @@ import { Icon, type IconName } from "../Icon";
 const softwareStatus: Record<UpdateState["status"], string> = {
   idle: "Sin comprobar",
   checking: "Comprobando",
+  downloading: "Descargando actualización",
   "up-to-date": "Al día",
   available: "Actualización disponible",
   downloaded: "Instalando",
-  error: "Error al comprobar",
+  error: "Error de actualización",
   unsupported: "No disponible",
 };
 

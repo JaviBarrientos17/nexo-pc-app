@@ -27,6 +27,11 @@ export function UpdatesView({
         title: "Buscando actualizaciones…",
         detail: "Estamos consultando si hay una versión más reciente.",
       },
+      downloading: {
+        title: "Descargando actualización…",
+        detail:
+          "La actualización se está descargando. La aplicación se reiniciará automáticamente al finalizar.",
+      },
       "up-to-date": {
         title: "Ya tienes la última versión",
         detail: "No se encontraron actualizaciones disponibles.",
@@ -41,7 +46,7 @@ export function UpdatesView({
           "La aplicación se reiniciará automáticamente para completar la instalación.",
       },
       error: {
-        title: "No se pudo comprobar",
+        title: "No se pudo completar la actualización",
         detail: state.message || "Comprueba tu conexión e inténtalo de nuevo.",
       },
       unsupported: {
@@ -57,7 +62,8 @@ export function UpdatesView({
       : state.status === "downloaded"
         ? { label: "Reiniciar e instalar", onClick: onInstall }
         : { label: "Buscar actualizaciones", onClick: onCheck };
-  const isBusy = state.status === "checking";
+  const isBusy =
+    state.status === "checking" || state.status === "downloading";
   const isPositive =
     state.status === "up-to-date" || state.status === "downloaded";
   const isProblem = state.status === "error" || state.status === "unsupported";
@@ -88,6 +94,14 @@ export function UpdatesView({
         <p className="section-kicker">ESTADO DE LA APLICACIÓN</p>
         <h2>{copy[state.status].title}</h2>
         <p className="update-state-detail">{copy[state.status].detail}</p>
+        {state.status === "downloading" && (
+          <progress
+            className="update-progress"
+            aria-label="Progreso de descarga"
+            max={100}
+            value={state.progress}
+          />
+        )}
         {state.version && (
           <p className="update-version">
             {state.status === "downloaded"
@@ -102,7 +116,11 @@ export function UpdatesView({
             onClick={action.onClick}
             disabled={isBusy}
           >
-            {isBusy ? "Buscando…" : action.label}
+            {isBusy
+              ? state.status === "downloading"
+                ? "Descargando…"
+                : "Buscando…"
+              : action.label}
           </button>
           {(state.status === "available" || state.status === "downloaded") && (
             <button
@@ -152,13 +170,14 @@ export function SettingsView({
   const updateDetail: Record<UpdateState["status"], string> = {
     idle: "Busca aquí una versión nueva de Nexo PC.",
     checking: "Buscando actualizaciones…",
+    downloading: "Descargando actualización…",
     "up-to-date": "No se encontraron actualizaciones disponibles.",
     available: "Hay una actualización disponible.",
     downloaded:
       "La actualización se está instalando y la aplicación se reiniciará.",
     error:
       updateState.message ||
-      "No se pudo comprobar. Comprueba tu conexión e inténtalo de nuevo.",
+      "No se pudo completar la actualización. Comprueba tu conexión e inténtalo de nuevo.",
     unsupported:
       updateState.message || "La búsqueda requiere la aplicación instalada.",
   };
@@ -167,7 +186,9 @@ export function SettingsView({
       ? { label: "Descargar actualización", onClick: onDownloadUpdate }
       : updateState.status === "downloaded"
         ? { label: "Reiniciar e instalar", onClick: onInstallUpdate }
-        : { label: "Buscar actualizaciones", onClick: onCheckUpdates };
+        : updateState.status === "downloading"
+          ? { label: "Descargando…", onClick: onDownloadUpdate }
+          : { label: "Buscar actualizaciones", onClick: onCheckUpdates };
 
   return (
     <div className="system-view settings-view">
@@ -254,6 +275,14 @@ export function SettingsView({
               {updateState.version && (
                 <small>Nueva versión: {updateState.version}</small>
               )}
+              {updateState.status === "downloading" && (
+                <progress
+                  className="update-progress"
+                  aria-label="Progreso de descarga"
+                  max={100}
+                  value={updateState.progress}
+                />
+              )}
             </div>
           </div>
           <div className="settings-update-actions">
@@ -262,6 +291,7 @@ export function SettingsView({
               onClick={updateAction.onClick}
               disabled={
                 updateState.status === "checking" ||
+                updateState.status === "downloading" ||
                 updateState.status === "downloaded"
               }
             >

@@ -411,11 +411,15 @@ export function App() {
   };
 
   const downloadUpdate = () => {
-    if (update) dismissedUpdateVersionRef.current = update.version;
-    setUpdatePromptOpen(false);
+    setUpdateState({
+      status: "downloading",
+      version: update?.version,
+      progress: 0,
+    });
     void window.nexo.downloadUpdate().catch((error: unknown) => {
       setUpdateState({
         status: "error",
+        version: update?.version,
         message:
           error instanceof Error
             ? error.message
@@ -496,6 +500,7 @@ export function App() {
       optionsFeedback={optionsFeedback}
       isExporting={isExporting}
       update={update}
+      updateState={updateState}
       updatePromptOpen={updatePromptOpen}
       onNavigateHistory={navigateHistory}
       onToggleSidebar={() => setSidebarCollapsed((collapsed) => !collapsed)}

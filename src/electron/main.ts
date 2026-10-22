@@ -212,6 +212,13 @@ function configureUpdates() {
     sendUpdate({ version: info.version, downloaded: false });
     sendUpdateState({ status: "available", version: info.version });
   });
+  updater.on("download-progress", ({ percent }) => {
+    sendUpdateState({
+      status: "downloading",
+      version: updateNotice?.version,
+      progress: Math.max(0, Math.min(100, Math.round(percent)))
+    });
+  });
   updater.on("update-downloaded", (info) => {
     sendUpdate({ version: info.version, downloaded: true });
     sendUpdateState({ status: "downloaded", version: info.version });
@@ -247,7 +254,14 @@ ipcMain.handle("cleanup:preview", (): CleanupItem[] => [
   { label: "Archivos temporales de usuario", path: "%TEMP%", sizeMb: 0, selected: true },
   { label: "Papelera de reciclaje", path: "Recycle Bin", sizeMb: 0, selected: false }
 ]);
-ipcMain.handle("update:download", () => updater.downloadUpdate());
+ipcMain.handle("update:download", () => {
+  sendUpdateState({
+    status: "downloading",
+    version: updateNotice?.version,
+    progress: 0
+  });
+  return updater.downloadUpdate();
+});
 ipcMain.handle("update:install", () => updater.quitAndInstall());
 ipcMain.handle("update:check", () => checkForUpdates());
 ipcMain.handle("update:current", (): UpdateSnapshot => ({

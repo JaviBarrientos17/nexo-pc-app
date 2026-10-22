@@ -111,6 +111,7 @@ export interface UpdateSnapshot {
 export type UpdateStatus =
   | "idle"
   | "checking"
+  | "downloading"
   | "up-to-date"
   | "available"
   | "downloaded"
@@ -120,6 +121,7 @@ export type UpdateStatus =
 export interface UpdateState {
   status: UpdateStatus;
   version?: string;
+  progress?: number;
   message?: string;
 }
 

@@ -1,5 +1,5 @@
 import type { ReactNode, RefObject } from "react";
-import type { UpdateNotice } from "../shared/types";
+import type { UpdateNotice, UpdateState } from "../shared/types";
 import { Icon, type IconName } from "./Icon";
 import appIcon from "../../assets/icon.png";
 
@@ -27,6 +27,7 @@ interface AppShellProps {
   optionsFeedback: string;
   isExporting: boolean;
   update?: UpdateNotice;
+  updateState: UpdateState;
   updatePromptOpen: boolean;
   onNavigateHistory: (direction: -1 | 1) => void;
   onToggleSidebar: () => void;
@@ -54,6 +55,7 @@ export function AppShell({
   optionsFeedback,
   isExporting,
   update,
+  updateState,
   updatePromptOpen,
   onNavigateHistory,
   onToggleSidebar,
@@ -306,6 +308,21 @@ export function AppShell({
               <p>
                 Versión disponible: <strong>{update.version}</strong>
               </p>
+              {updateState.status === "downloading" && (
+                <div className="update-download-progress" role="status">
+                  <p>Descargando actualización…</p>
+                  <progress
+                    aria-label="Progreso de descarga"
+                    max={100}
+                    value={updateState.progress}
+                  />
+                </div>
+              )}
+              {updateState.status === "error" && (
+                <p className="update-download-error" role="alert">
+                  {updateState.message || "No se pudo descargar la actualización."}
+                </p>
+              )}
               <div className="update-dialog-actions">
                 <button
                   className="secondary-button"
@@ -316,8 +333,13 @@ export function AppShell({
                 <button
                   className="primary-button"
                   onClick={onDownloadUpdate}
+                  disabled={updateState.status === "downloading"}
                 >
-                  Descargar y actualizar
+                  {updateState.status === "downloading"
+                    ? "Descargando…"
+                    : updateState.status === "error"
+                      ? "Reintentar descarga"
+                      : "Descargar y actualizar"}
                 </button>
               </div>
             </section>
