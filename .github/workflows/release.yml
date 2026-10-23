@@ -29,28 +29,6 @@ jobs:
       - name: Build app
         run: npm run build
 
-      - name: Assign release version
-        shell: pwsh
-        run: |
-          npm version "0.1.${{ github.run_number }}" --no-git-tag-version
-          if ($LASTEXITCODE -ne 0) { throw "Could not update the package version." }
-
-          $version = (node -p "require('./package.json').version").Trim()
-          if ($LASTEXITCODE -ne 0) { throw "Could not read the updated package version." }
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json
-          git diff --cached --quiet
-          if ($LASTEXITCODE -eq 1) {
-            git commit -m "chore: bump version to $version"
-            if ($LASTEXITCODE -ne 0) { throw "Could not commit the package version." }
-            git push origin "HEAD:$env:GITHUB_REF_NAME"
-            if ($LASTEXITCODE -ne 0) { throw "Could not push the package version to the branch." }
-          } elseif ($LASTEXITCODE -ne 0) {
-            throw "Could not check whether package version files changed."
-          }
-
       - name: Create release tag
         shell: pwsh
         run: |

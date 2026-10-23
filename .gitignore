@@ -2,3 +2,6 @@ node_modules
 dist-electron
 dist
 release
+[Hh]elvetica*.zip
+[Hh]elvetica*.ttf
+[Hh]elvetica*.otf
