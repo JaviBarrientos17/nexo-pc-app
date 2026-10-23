@@ -25,4 +25,4 @@ nsis:
   allowToChangeInstallationDirectory: true
   installerIcon: assets/icon.ico
   uninstallerIcon: assets/icon.ico
-  artifactName: ${productName}-Setup-${version}-${arch}.${ext}
+  artifactName: Nexo-PC-Setup-${version}-${arch}.${ext}
