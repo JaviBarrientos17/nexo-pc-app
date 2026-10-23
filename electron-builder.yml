@@ -10,6 +10,8 @@ extraResources:
     to: icon.png
 publish:
   provider: github
+  owner: JaviBarrientos17
+  repo: nexo-pc-app
   releaseType: release
 win:
   icon: assets/icon.ico

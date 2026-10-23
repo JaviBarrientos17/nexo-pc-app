@@ -55,7 +55,7 @@ Configura el idioma y la apariencia, y consulta las opciones de actualización y
 - **Salud del sistema:** comprobaciones de hardware y estado general.
 - **Unidades:** resumen del almacenamiento, uso y detalles de unidades físicas y lógicas.
 - **Limpieza:** previsualización de ubicaciones seguras; no se borra nada.
-- **Actualizaciones:** al abrir la aplicación instalada comprueba las releases de GitHub y avisa si hay una versión nueva. La descarga se conserva en la carpeta temporal de Windows, se instala al finalizar y la aplicación se reinicia automáticamente.
+- **Actualizaciones:** al abrir la aplicación instalada comprueba las publicaciones de GitHub Releases y avisa si hay una versión nueva. Al descargar, obtiene el instalador de la publicación; se instala al finalizar y la aplicación se reinicia automáticamente.
 - **Ajustes:** cambia entre tema claro y oscuro y permite consultar o iniciar una actualización aunque se haya cerrado el aviso inicial.
 - **Exportación:** exporta los datos de la vista actual como TXT o CSV desde el menú de opciones.
 
@@ -91,6 +91,6 @@ npm run build
 npm run package:win
 ```
 
-El empaquetado usa NSIS y genera un instalador `.exe` para x64, con la arquitectura indicada en el nombre del archivo. El workflow valida que `latest.yml` corresponda a la versión empaquetada y adjunta tanto ese índice como el `.exe` a la release; electron-builder también genera un `.blockmap` auxiliar para las actualizaciones diferenciales. Si se configuran los secretos de firma `WIN_CSC_LINK` y `WIN_CSC_KEY_PASSWORD`, electron-builder firma el instalador; sin ellos, lo genera sin firmar. El workflow de GitHub Actions actualiza y confirma la versión de `package.json` y `package-lock.json` como `0.1.<número de ejecución>` antes de publicar una release al recibir cambios en `main`.
+El empaquetado usa NSIS y genera un instalador `.exe` para x64, con la arquitectura indicada en el nombre del archivo. GitHub Actions adjunta el instalador, su `.blockmap` y el manifiesto `latest.yml` a una publicación de GitHub Releases. No hace falta configurar un servicio de hosting, bucket ni secretos adicionales: el workflow usa `GITHUB_TOKEN`, con permiso de escritura de contenido ya declarado. El repositorio debe ser público para que cualquier usuario pueda descargar las actualizaciones sin autenticación. Para empaquetar localmente, ejecuta `npm run package:win`; este comando no publica nada. Si se configuran los secretos opcionales de firma `WIN_CSC_LINK` y `WIN_CSC_KEY_PASSWORD`, electron-builder firma el instalador; sin ellos, lo genera sin firmar. El workflow de GitHub Actions actualiza y confirma la versión de `package.json` y `package-lock.json` como `0.1.<número de ejecución>` antes de publicar una actualización al recibir cambios en `main`.
 
 Para consultar el alcance y las decisiones del producto, revisa [docs/PLAN_INICIAL.md](docs/PLAN_INICIAL.md).

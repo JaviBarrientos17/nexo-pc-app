@@ -16,7 +16,7 @@
     "build:electron": "tsc -p tsconfig.electron.json",
     "lint": "tsc --noEmit && tsc -p tsconfig.electron.json --noEmit",
     "test": "vitest run",
-    "package:win": "npm run build && electron-builder --win nsis --x64"
+    "package:win": "npm run build && electron-builder --win nsis --x64 --publish never"
   },
   "dependencies": {
     "electron-updater": "^6.6.2",

@@ -140,6 +140,19 @@ function sendUpdateState(state: UpdateState) {
   mainWindow?.webContents.send("update:state", state);
 }
 
+function formatUpdateError(error: unknown) {
+  const spanish = app.getLocale().toLowerCase().startsWith("es");
+  const details = error instanceof Error ? error.message : "";
+  if (/\b404\b/.test(details)) {
+    return spanish
+      ? "La última publicación de GitHub no contiene latest.yml. Inténtalo de nuevo cuando se publique la siguiente versión."
+      : "The latest GitHub release does not contain latest.yml. Try again after the next version is published.";
+  }
+  return spanish
+    ? "No se pudo completar la actualización. Comprueba tu conexión e inténtalo de nuevo."
+    : "Could not complete the update. Check your connection and try again.";
+}
+
 async function checkForUpdates() {
   if (!app.isPackaged) {
     sendUpdateState({
@@ -153,9 +166,10 @@ async function checkForUpdates() {
   try {
     await updater.checkForUpdates();
   } catch (error) {
-    const message = error instanceof Error ? error.message : "No se pudo comprobar si hay actualizaciones.";
+    console.error("Error al comprobar actualizaciones.", error);
+    const message = formatUpdateError(error);
     sendUpdateState({ status: "error", message });
-    throw error;
+    throw new Error(message);
   }
 }
 
@@ -226,7 +240,7 @@ function configureUpdates() {
   });
   updater.on("error", (error) => {
     console.error("Error al actualizar Nexo PC.", error);
-    sendUpdateState({ status: "error", message: error.message });
+    sendUpdateState({ status: "error", message: formatUpdateError(error) });
   });
 }
 
