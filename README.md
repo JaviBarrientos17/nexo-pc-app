@@ -1,3 +1,5 @@
+<img src="assets/icon.svg" width="64" height="64" alt="Icono de Nexo PC" />
+
 # Nexo PC
 
 Diagnóstico local para Windows. Consulta el rendimiento, los componentes y el almacenamiento de tu equipo desde una interfaz sencilla, con temas claro y oscuro.

@@ -69,7 +69,7 @@ h1, h2, h3, strong { font-weight: 600; }
 .sidebar { position: sticky; top: 42px; display: flex; flex-direction: column; flex: 0 0 214px; width: 214px; height: calc(100vh - 42px); padding: 32px 14px 20px; border-right: 1px solid var(--line); background: var(--sidebar); }
 .sidebar-header { padding: 0 12px 42px; }
 .brand { display: flex; align-items: center; gap: 10px; }
-.brand-monogram { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid var(--ink); border-radius: 6px; font-size: 22px; font-weight: 650; letter-spacing: -2px; padding-right: 2px; }
+.brand-monogram { display: block; width: 30px; height: 30px; border-radius: 6px; outline: 1px solid var(--line); }
 .brand-name { font-size: 22px; font-weight: 650; letter-spacing: -1px; }
 .brand-name > span { color: var(--faint); font-size: 11px; font-weight: 400; letter-spacing: 0; }
 .sidebar-scroll { display: flex; flex: 1; min-height: 0; flex-direction: column; overflow-y: auto; }
@@ -326,8 +326,7 @@ nav { display: grid; gap: 3px; }
 .settings-card strong { display: block; font-size: 12px; }
 .settings-card small { display: block; max-width: 400px; margin-top: 6px; color: var(--muted); font-size: 11px; }
 .settings-icon, .settings-brand-mark { display: grid; place-items: center; width: 28px; flex: 0 0 28px; color: var(--faint); font-size: 21px; }
-.settings-brand-mark { height: 28px; background: var(--accent); border-radius: 5px; }
-.settings-brand-mark i { width: 9px; height: 9px; border: 1px solid var(--on-accent); border-radius: 2px; }
+.settings-brand-mark { display: block; height: 28px; border-radius: 5px; outline: 1px solid var(--line); }
 .language-select { min-width: 140px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); background: var(--surface); font-size: 11px; }
 .appearance-options { display: flex; gap: 8px; }
 .appearance-option { display: flex; align-items: center; gap: 9px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 5px; color: var(--muted); background: transparent; font-size: 11px; }

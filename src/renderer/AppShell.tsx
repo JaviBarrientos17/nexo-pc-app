@@ -1,6 +1,7 @@
 import type { ReactNode, RefObject } from "react";
 import type { UpdateNotice, UpdateState } from "../shared/types";
 import { Icon, type IconName } from "./Icon";
+import appMark from "../../assets/icon.svg";
 
 const systemNav: Array<{ label: string; icon: IconName }> = [
   { label: "Resumen", icon: "grid" },
@@ -135,7 +136,7 @@ export function AppShell({
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="brand">
-            <span className="brand-monogram" aria-hidden="true">n.</span>
+            <img className="brand-monogram" src={appMark} alt="" />
             <div className="brand-text">
               <span className="brand-name">nexo<span> / PC</span></span>
             </div>
