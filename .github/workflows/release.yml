@@ -95,8 +95,12 @@ jobs:
             throw "release/latest.yml does not describe version $version."
           }
 
-          if ($metadataContent -notmatch [regex]::Escape($installers[0].Name)) {
-            throw "release/latest.yml does not reference the Windows installer."
+          $metadataUrls = [regex]::Matches($metadataContent, '(?m)^\s*-\s*url:\s*(?<url>\S+)\s*$')
+          $referencedFiles = @($metadataUrls | ForEach-Object {
+            [Uri]::UnescapeDataString($_.Groups["url"].Value.Trim('"', [char]39))
+          })
+          if ($referencedFiles -notcontains $installers[0].Name) {
+            throw "release/latest.yml references [$($referencedFiles -join ', ')], not the Windows installer [$($installers[0].Name)]."
           }
 
           $blockmaps = @(Get-ChildItem -Path "release" -Filter "*.exe.blockmap" -File)
