@@ -13,9 +13,7 @@ export function GpuSection(props: HardwareSectionProps) {
     loadTone,
   } = props;
   return (
-    <>
-      {/* 3. GPU / Graphics */}
-      {(category === "all" || category === "gpu") &&
+    <>      {(category === "all" || category === "gpu") &&
         matchesSearch(
           "GPU Gráfica Nvidia Radeon Intel GeForce VRAM " +
             (report?.gpu.name || ""),
@@ -23,6 +21,15 @@ export function GpuSection(props: HardwareSectionProps) {
           <section className="hw-card">
             <header
               className="hw-card-header"
+              role="button"
+              tabIndex={0}
+              aria-expanded={!collapsed.gpu}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  toggleSection("gpu");
+                }
+              }}
               onClick={() => toggleSection("gpu")}
             >
               <div className="hw-header-title">
@@ -70,14 +77,12 @@ export function GpuSection(props: HardwareSectionProps) {
                       <th style={{ width: "10%" }}>Nivel</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {/* Temperature */}
-                    {report?.gpu.temperatureC !== undefined && (
+                  <tbody>                    {report?.gpu.temperatureC !== undefined && (
                       <>
                         <tr className="group-row">
                           <td colSpan={5}>
                             <span className="sensor-subcat">
-                              🌡️ TEMPERATURA GPU
+                              TEMPERATURA GPU
                             </span>
                           </td>
                         </tr>
@@ -112,13 +117,10 @@ export function GpuSection(props: HardwareSectionProps) {
                           </td>
                         </tr>
                     </>
-                      )}
-
-                      {/* Utilization */}
-                      <tr className="group-row">
+                      )}                      <tr className="group-row">
                         <td colSpan={5}>
                           <span className="sensor-subcat">
-                            📊 UTILIZACIÓN & CARGA
+                            UTILIZACIÓN & CARGA
                           </span>
                         </td>
                       </tr>
@@ -189,15 +191,12 @@ export function GpuSection(props: HardwareSectionProps) {
                             </div>
                           </td>
                         </tr>
-                      )}
-
-                      {/* VRAM Memory */}
-                      {report?.gpu.memoryTotalMb !== undefined && (
+                      )}                      {report?.gpu.memoryTotalMb !== undefined && (
                         <>
                           <tr className="group-row">
                             <td colSpan={5}>
                               <span className="sensor-subcat">
-                                🧠 MEMORIA DE VIDEO (VRAM)
+                                MEMORIA DE VIDEO (VRAM)
                               </span>
                             </td>
                           </tr>
@@ -239,16 +238,13 @@ export function GpuSection(props: HardwareSectionProps) {
                             </td>
                           </tr>
                         </>
-                      )}
-
-                      {/* Power & Fan */}
-                      {(report?.gpu.powerDrawWatts !== undefined ||
+                      )}                      {(report?.gpu.powerDrawWatts !== undefined ||
                         report?.gpu.fanSpeedPercent !== undefined) && (
                         <>
                           <tr className="group-row">
                             <td colSpan={5}>
                               <span className="sensor-subcat">
-                                ⚡ ENERGÍA & VENTILADORES
+                                ENERGÍA & VENTILADORES
                               </span>
                             </td>
                           </tr>

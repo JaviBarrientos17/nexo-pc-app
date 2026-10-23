@@ -13,22 +13,17 @@ export function CleanupView({
       <section className="hero cleanup-hero">
         <div>
           <p className="eyebrow">MANTENIMIENTO SEGURO</p>
-          <h1>
-            Haz espacio
-            <br />
-            con tranquilidad<span className="title-dot">.</span>
-          </h1>
+          <h1>Revisión de limpieza</h1>
           <p className="hero-copy">
-            Primero revisas exactamente qué se analizará. Nada se elimina sin tu
-            confirmación.
+            Consulta las ubicaciones previstas para limpieza. Esta versión no elimina archivos.
           </p>
         </div>
         <div className="scan-status">
           <span className="scan-ring amber">
-            <Icon name="sparkles" size={21} />
+            <Icon name="file" size={18} />
           </span>
           <div>
-            <strong>Limpieza protegida</strong>
+            <strong>Solo previsualización</strong>
             <small>Sin cambios en el sistema</small>
           </div>
         </div>
@@ -47,9 +42,8 @@ export function CleanupView({
         {items ? (
           items.map((item) => (
             <div className="cleanup-row" key={item.label}>
-              <input type="checkbox" defaultChecked={item.selected} />
               <span className="cleanup-icon">
-                <Icon name="sparkles" size={16} />
+                <Icon name="file" size={16} />
               </span>
               <div>
                 <strong>{item.label}</strong>
@@ -58,7 +52,6 @@ export function CleanupView({
               <span>
                 {item.sizeMb ? `${item.sizeMb} MB` : "Pendiente de análisis"}
               </span>
-              <Icon name="arrow" size={16} />
             </div>
           ))
         ) : (

@@ -18,16 +18,16 @@ interface MinMaxTrack {
 interface HardwareMonitorProps {
   report?: HardwareReport;
   onRefresh?: () => void;
+  initialCategory?: CategoryFilter;
 }
 
-export function HardwareMonitor({ report, onRefresh }: HardwareMonitorProps) {
+export function HardwareMonitor({ report, onRefresh, initialCategory = "all" }: HardwareMonitorProps) {
   const [history, setHistory] = useState<Record<string, MinMaxTrack>>({});
   const [isPaused, setIsPaused] = useState(false);
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState<CategoryFilter>("all");
+  const [category, setCategory] = useState<CategoryFilter>(initialCategory);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
-  // Update Min/Max tracking on each report tick unless paused
   useEffect(() => {
     if (!report || isPaused) return;
 
@@ -46,20 +46,17 @@ export function HardwareMonitor({ report, onRefresh }: HardwareMonitorProps) {
         }
       };
 
-      // CPU
       updateVal("cpu_load", report.cpu.usagePercent);
       updateVal("cpu_clock", report.cpu.currentClockGhz);
       if (report.cpu.temperatureC !== undefined) {
         updateVal("cpu_temp", report.cpu.temperatureC);
       }
 
-      // RAM
       updateVal("ram_usage_pct", report.memory.usagePercent);
       updateVal("ram_used_gb", report.memory.usedGb);
       updateVal("ram_free_gb", report.memory.freeGb);
       updateVal("vram_sys_used_gb", report.memory.virtualUsedGb);
 
-      // GPU
       if (report.gpu.temperatureC !== undefined) {
         updateVal("gpu_temp", report.gpu.temperatureC);
       }
@@ -79,7 +76,6 @@ export function HardwareMonitor({ report, onRefresh }: HardwareMonitorProps) {
         updateVal("gpu_fan", report.gpu.fanSpeedPercent);
       }
 
-      // Logical Disks
       report.logicalDisks.forEach((disk) => {
         updateVal(`disk_${disk.deviceId}_pct`, disk.usagePercent);
       });
@@ -186,9 +182,7 @@ export function HardwareMonitor({ report, onRefresh }: HardwareMonitorProps) {
   };
 
   return (
-    <div className="hw-monitor-container">
-      {/* Top Banner / Hero */}
-      <section className="hero hw-hero">
+    <div className="hw-monitor-container">      <section className="hero hw-hero">
         <div>
           <p className="eyebrow">SENSORES DEL SISTEMA</p>
           <h1>
@@ -226,10 +220,7 @@ export function HardwareMonitor({ report, onRefresh }: HardwareMonitorProps) {
             </small>
           </div>
         </div>
-      </section>
-
-      {/* Control Bar: Filters, Search, Reset Min/Max, Pause */}
-      <div className="hw-controls-bar">
+      </section>      <div className="hw-controls-bar">
         <div className="hw-filter-tabs">
           <button
             className={category === "all" ? "filter-tab active" : "filter-tab"}
@@ -288,12 +279,13 @@ export function HardwareMonitor({ report, onRefresh }: HardwareMonitorProps) {
             </svg>
             <input
               type="text"
+              aria-label="Buscar sensor o componente"
               placeholder="Buscar sensor o componente..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
             {search && (
-              <button className="clear-search" onClick={() => setSearch("")}>
+              <button className="clear-search" aria-label="Borrar búsqueda" onClick={() => setSearch("")}>
                 ×
               </button>
             )}
@@ -315,20 +307,21 @@ export function HardwareMonitor({ report, onRefresh }: HardwareMonitorProps) {
               <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
               <path d="M3 3v5h5" />
             </svg>
-            <span>Reset Mín/Máx</span>
+            <span>Restablecer mín/máx</span>
           </button>
 
           <button
             className={`hw-btn pause-btn ${isPaused ? "paused" : ""}`}
             onClick={() => setIsPaused(!isPaused)}
+            aria-pressed={isPaused}
             title={
               isPaused
-                ? "Reanudar actualización en vivo"
-                : "Pausar actualización en vivo"
+                ? "Reanudar registro de mínimos y máximos"
+                : "Pausar registro de mínimos y máximos"
             }
           >
             <span className={`live-dot ${isPaused ? "paused" : ""}`} />
-            <span>{isPaused ? "Pausado" : "En Vivo"}</span>
+            <span>{isPaused ? "Reanudar mín/máx" : "Pausar mín/máx"}</span>
           </button>
 
           <div className="hw-expand-group">
@@ -348,10 +341,7 @@ export function HardwareMonitor({ report, onRefresh }: HardwareMonitorProps) {
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Sensors Tree / Sections */}
-      <div className="hw-tree">
+      </div>      <div className="hw-tree">
         <MotherboardSection {...sectionProps} />
         <CpuSection {...sectionProps} />
         <GpuSection {...sectionProps} />

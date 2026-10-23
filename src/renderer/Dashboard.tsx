@@ -1,21 +1,21 @@
-import { useEffect, useState } from "react";
 import type {
   HardwareReport,
   SystemSnapshot,
   UpdateState,
 } from "../shared/types";
 import type { Language } from "./localization";
+import type { CategoryFilter } from "./hardware/HardwareSectionTypes";
 import { DashboardHero } from "./dashboard/DashboardHero";
 import { HardwareActionPanel } from "./dashboard/HardwareActionPanel";
 import { HealthPanel } from "./dashboard/HealthPanel";
 import { MetricsGrid } from "./dashboard/MetricsGrid";
 import { PerformancePanel } from "./dashboard/PerformancePanel";
 import { Icon } from "./Icon";
-import { meter } from "./dashboard/utils";
 
 export { meter, snapshotFromReport } from "./dashboard/utils";
 
 export function Dashboard({
+  cpuHistory,
   snapshot,
   hardware,
   dataError,
@@ -24,32 +24,17 @@ export function Dashboard({
   updateState,
   onOpenHardware,
 }: {
+  cpuHistory: number[];
   snapshot?: SystemSnapshot;
   hardware?: HardwareReport;
   dataError: string;
   language: Language;
   memoryPercent: number;
   updateState: UpdateState;
-  onOpenHardware: () => void;
+  onOpenHardware: (category?: CategoryFilter) => void;
 }) {
   const cpu = snapshot?.cpu.usagePercent;
   const gpuLoad = hardware?.gpu.utilizationPercent;
-  const [cpuHistory, setCpuHistory] = useState<number[]>([]);
-  const [gpuHistory, setGpuHistory] = useState<number[]>([]);
-
-  useEffect(() => {
-    if (!snapshot || snapshot.cpu.usagePercent === undefined) return;
-    const usage = snapshot.cpu.usagePercent;
-    setCpuHistory((history) =>
-      [...history, meter(usage)].slice(-40),
-    );
-  }, [snapshot?.collectedAt]);
-
-  useEffect(() => {
-    if (gpuLoad === undefined) return;
-    setGpuHistory((history) => [...history, meter(gpuLoad)].slice(-40));
-  }, [hardware?.collectedAt, gpuLoad]);
-
   const requiresAttention =
     (cpu !== undefined && cpu >= 95) ||
     memoryPercent >= 90 ||
@@ -67,15 +52,13 @@ export function Dashboard({
         dataError={dataError}
         language={language}
         requiresAttention={requiresAttention}
-        onOpenHardware={onOpenHardware}
+        onOpenHardware={() => onOpenHardware()}
       />
       <MetricsGrid
         snapshot={snapshot}
         memoryPercent={memoryPercent}
         gpuLoad={gpuLoad}
         gpuTemp={hardware?.gpu.temperatureC}
-        cpuHistory={cpuHistory}
-        gpuHistory={gpuHistory}
         onOpenHardware={onOpenHardware}
       />
       <section className="dashboard-grid">
@@ -84,9 +67,9 @@ export function Dashboard({
           hardware={hardware}
           snapshot={snapshot}
           updateState={updateState}
-          onOpenHardware={onOpenHardware}
+          onOpenHardware={() => onOpenHardware()}
         />
-        <HardwareActionPanel onOpenHardware={onOpenHardware} />
+        <HardwareActionPanel onOpenHardware={() => onOpenHardware()} />
       </section>
       <footer className="app-footer">
         <span>

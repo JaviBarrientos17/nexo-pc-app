@@ -13,9 +13,7 @@ export function MotherboardSection(props: HardwareSectionProps) {
     loadTone,
   } = props;
   return (
-    <>
-      {/* 1. Motherboard */}
-      {(category === "all" || category === "motherboard") &&
+    <>      {(category === "all" || category === "motherboard") &&
         matchesSearch(
           "Placa Base Motherboard BIOS Gigabyte Asus MSI ASRock " +
             (report?.motherboard.product || ""),
@@ -23,6 +21,15 @@ export function MotherboardSection(props: HardwareSectionProps) {
           <section className="hw-card">
             <header
               className="hw-card-header"
+              role="button"
+              tabIndex={0}
+              aria-expanded={!collapsed.motherboard}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  toggleSection("motherboard");
+                }
+              }}
               onClick={() => toggleSection("motherboard")}
             >
               <div className="hw-header-title">

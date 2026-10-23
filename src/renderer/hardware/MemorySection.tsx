@@ -13,9 +13,7 @@ export function MemorySection(props: HardwareSectionProps) {
     loadTone,
   } = props;
   return (
-    <>
-      {/* 4. Memory (RAM) */}
-      {(category === "all" || category === "ram") &&
+    <>      {(category === "all" || category === "ram") &&
         matchesSearch(
           "RAM Memoria DDR4 DDR5 Corsair Kingston Slots " +
             (report?.memory.modules
@@ -25,6 +23,15 @@ export function MemorySection(props: HardwareSectionProps) {
           <section className="hw-card">
             <header
               className="hw-card-header"
+              role="button"
+              tabIndex={0}
+              aria-expanded={!collapsed.ram}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  toggleSection("ram");
+                }
+              }}
               onClick={() => toggleSection("ram")}
             >
               <div className="hw-header-title">
@@ -69,7 +76,7 @@ export function MemorySection(props: HardwareSectionProps) {
                     <tr className="group-row">
                       <td colSpan={5}>
                         <span className="sensor-subcat">
-                          📊 MEMORIA FÍSICA
+                          MEMORIA FÍSICA
                         </span>
                       </td>
                     </tr>
@@ -143,7 +150,7 @@ export function MemorySection(props: HardwareSectionProps) {
                     <tr className="group-row">
                       <td colSpan={5}>
                         <span className="sensor-subcat">
-                          💾 MEMORIA VIRTUAL / ARCHIVO DE PAGINACIÓN
+                          MEMORIA VIRTUAL / ARCHIVO DE PAGINACIÓN
                         </span>
                       </td>
                     </tr>
@@ -193,10 +200,7 @@ export function MemorySection(props: HardwareSectionProps) {
                         </td>
                       </tr>
                     </tbody>
-                  </table>
-
-                  {/* RAM Modules Details Table */}
-                  {report?.memory.modules &&
+                  </table>                  {report?.memory.modules &&
                     report.memory.modules.length > 0 && (
                       <div className="sub-module-section">
                         <p className="sub-section-title">
