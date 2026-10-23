@@ -1,4 +1,5 @@
 import type { HardwareSectionProps } from "./HardwareSectionTypes";
+import { Icon } from "../Icon";
 
 export function GpuSection(props: HardwareSectionProps) {
   const {
@@ -77,7 +78,8 @@ export function GpuSection(props: HardwareSectionProps) {
                         <tr className="group-row">
                           <td colSpan={5}>
                             <span className="sensor-subcat">
-                              🌡️ TEMPERATURA GPU
+                              <Icon name="thermometer" size={14} />
+                              TEMPERATURA GPU
                             </span>
                           </td>
                         </tr>
@@ -118,7 +120,8 @@ export function GpuSection(props: HardwareSectionProps) {
                       <tr className="group-row">
                         <td colSpan={5}>
                           <span className="sensor-subcat">
-                            📊 UTILIZACIÓN & CARGA
+                            <Icon name="pulse" size={14} />
+                            UTILIZACIÓN & CARGA
                           </span>
                         </td>
                       </tr>
@@ -197,7 +200,8 @@ export function GpuSection(props: HardwareSectionProps) {
                           <tr className="group-row">
                             <td colSpan={5}>
                               <span className="sensor-subcat">
-                                🧠 MEMORIA DE VIDEO (VRAM)
+                                <Icon name="chip" size={14} />
+                                MEMORIA DE VIDEO (VRAM)
                               </span>
                             </td>
                           </tr>
@@ -248,7 +252,8 @@ export function GpuSection(props: HardwareSectionProps) {
                           <tr className="group-row">
                             <td colSpan={5}>
                               <span className="sensor-subcat">
-                                ⚡ ENERGÍA & VENTILADORES
+                                <Icon name="pulse" size={14} />
+                                ENERGÍA & VENTILADORES
                               </span>
                             </td>
                           </tr>

@@ -5,6 +5,7 @@ import type {
   UpdateState,
 } from "../shared/types";
 import type { Language } from "./localization";
+import { Icon } from "./Icon";
 
 export function UpdatesView({
   state,
@@ -67,15 +68,14 @@ export function UpdatesView({
   const isPositive =
     state.status === "up-to-date" || state.status === "downloaded";
   const isProblem = state.status === "error" || state.status === "unsupported";
+  const stateIcon = isProblem ? "alert" : isPositive ? "check" : "refresh";
 
   return (
     <div className="system-view updates-view">
       <section className="hero system-view-hero">
         <div>
           <p className="eyebrow">SOFTWARE</p>
-          <h1>
-            Actualizaciones<span className="title-dot">.</span>
-          </h1>
+          <h1>Actualizaciones</h1>
           <p className="hero-copy">
             Comprueba y aplica las actualizaciones de Nexo PC desde esta
             pantalla.
@@ -89,7 +89,7 @@ export function UpdatesView({
           className={`update-state-symbol${isBusy ? " busy" : ""}${isPositive ? " positive" : ""}`}
           aria-hidden="true"
         >
-          {isProblem ? "!" : isPositive ? "✓" : "↻"}
+          <Icon name={stateIcon} size={24} />
         </div>
         <p className="section-kicker">ESTADO DE LA APLICACIÓN</p>
         <h2>{copy[state.status].title}</h2>
@@ -196,7 +196,7 @@ export function SettingsView({
         <div>
           <p className="eyebrow">PREFERENCIAS</p>
           <h1>
-            Ajustes<span className="title-dot">.</span>
+            Ajustes
           </h1>
           <p className="hero-copy">
             Personaliza la apariencia y consulta cómo se gestionan tus datos.
@@ -207,7 +207,9 @@ export function SettingsView({
         <p className="section-kicker">IDIOMA</p>
         <article className="surface settings-card">
           <div className="settings-card-heading">
-            <span className="settings-icon language">文</span>
+            <span className="settings-icon language">
+              <Icon name="language" size={18} />
+            </span>
             <div>
               <strong>Idioma de la aplicación</strong>
               <small>Elige el idioma de todos los menús y pantallas.</small>
@@ -230,7 +232,9 @@ export function SettingsView({
         <p className="section-kicker">APARIENCIA</p>
         <article className="surface settings-card">
           <div className="settings-card-heading">
-            <span className="settings-icon appearance">◐</span>
+            <span className="settings-icon appearance">
+              <Icon name="moon" size={18} />
+            </span>
             <div>
               <strong>Modo de color</strong>
               <small>Elige la apariencia de Nexo PC.</small>
@@ -268,7 +272,9 @@ export function SettingsView({
         <p className="section-kicker">ACTUALIZACIONES</p>
         <article className="surface settings-card settings-update-card">
           <div className="settings-card-heading">
-            <span className="settings-icon updates">↻</span>
+            <span className="settings-icon updates">
+              <Icon name="refresh" size={18} />
+            </span>
             <div>
               <strong>Actualizaciones de Nexo PC</strong>
               <small>{updateDetail[updateState.status]}</small>
@@ -308,7 +314,9 @@ export function SettingsView({
       <section className="settings-section">
         <p className="section-kicker">PRIVACIDAD</p>
         <article className="surface settings-card settings-info-row">
-          <span className="settings-icon privacy">⌂</span>
+          <span className="settings-icon privacy">
+            <Icon name="home" size={18} />
+          </span>
           <div>
             <strong>Procesamiento local</strong>
             <small>
@@ -439,7 +447,7 @@ export function SystemHealthView({
         <div>
           <p className="eyebrow">DIAGNÓSTICO</p>
           <h1>
-            Salud del sistema<span className="title-dot">.</span>
+            Salud del sistema
           </h1>
           <p className="hero-copy">
             Un resumen de las métricas disponibles para ayudarte a detectar
@@ -648,7 +656,7 @@ export function DrivesView({ report }: { report?: HardwareReport }) {
         <div>
           <p className="eyebrow">ALMACENAMIENTO</p>
           <h1>
-            Unidades<span className="title-dot">.</span>
+            Unidades
           </h1>
           <p className="hero-copy">
             Consulta tus discos, volúmenes y el espacio disponible en este

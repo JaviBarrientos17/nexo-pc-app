@@ -92,10 +92,20 @@ export interface HardwareReport {
 }
 
 export interface CleanupItem {
+  id: "user-temp" | "recycle-bin";
   label: string;
   path: string;
-  sizeMb: number;
+  sizeBytes: number;
+  fileCount: number;
   selected: boolean;
+}
+
+export interface CleanupResult {
+  id: CleanupItem["id"];
+  deletedBytes: number;
+  deletedFiles: number;
+  failedFiles: number;
+  error?: string;
 }
 
 export interface UpdateNotice {

@@ -26,7 +26,6 @@ export function DashboardHero({
               ? "Hay métricas que revisar"
               : "Resumen del equipo"
             : "Preparando tu primer resumen"}
-          <span className="title-dot">.</span>
         </h1>
         <p className="hero-copy">
           {snapshot

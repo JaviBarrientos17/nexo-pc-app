@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type {
   CleanupItem,
+  CleanupResult,
   ExportFileRequest,
   ExportFileResult,
   HardwareReport,
@@ -14,6 +15,8 @@ contextBridge.exposeInMainWorld("nexo", {
   getSnapshot: (): Promise<SystemSnapshot> => ipcRenderer.invoke("system:snapshot"),
   getHardwareReport: (): Promise<HardwareReport> => ipcRenderer.invoke("hardware:report"),
   getCleanupPreview: (): Promise<CleanupItem[]> => ipcRenderer.invoke("cleanup:preview"),
+  cleanSelectedItems: (ids: CleanupItem["id"][]): Promise<CleanupResult[]> =>
+    ipcRenderer.invoke("cleanup:run", ids),
   downloadUpdate: () => ipcRenderer.invoke("update:download"),
   installUpdate: () => ipcRenderer.invoke("update:install"),
   checkForUpdates: () => ipcRenderer.invoke("update:check"),

@@ -2,8 +2,10 @@
 
 import type {
   CleanupItem,
+  CleanupResult,
   ExportFileRequest,
   ExportFileResult,
+  FanControlInfo,
   HardwareReport,
   SystemSnapshot,
   UpdateNotice,
@@ -16,7 +18,11 @@ declare global {
     nexo: {
       getSnapshot(): Promise<SystemSnapshot>;
       getHardwareReport(): Promise<HardwareReport>;
+      getFanControls(): Promise<FanControlInfo[]>;
+      setFanControl(id: string, percent: number): Promise<FanControlInfo[]>;
+      restoreFanControls(): Promise<FanControlInfo[]>;
       getCleanupPreview(): Promise<CleanupItem[]>;
+      cleanSelectedItems(ids: CleanupItem["id"][]): Promise<CleanupResult[]>;
       downloadUpdate(): Promise<void>;
       installUpdate(): Promise<void>;
       checkForUpdates(): Promise<void>;

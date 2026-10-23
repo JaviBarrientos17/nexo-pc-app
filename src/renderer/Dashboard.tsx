@@ -23,6 +23,7 @@ export function Dashboard({
   memoryPercent,
   updateState,
   onOpenHardware,
+  onOpenHardwareStatus,
 }: {
   snapshot?: SystemSnapshot;
   hardware?: HardwareReport;
@@ -31,6 +32,7 @@ export function Dashboard({
   memoryPercent: number;
   updateState: UpdateState;
   onOpenHardware: () => void;
+  onOpenHardwareStatus: () => void;
 }) {
   const cpu = snapshot?.cpu.usagePercent;
   const gpuLoad = hardware?.gpu.utilizationPercent;
@@ -67,7 +69,7 @@ export function Dashboard({
         dataError={dataError}
         language={language}
         requiresAttention={requiresAttention}
-        onOpenHardware={onOpenHardware}
+        onOpenHardware={onOpenHardwareStatus}
       />
       <MetricsGrid
         snapshot={snapshot}

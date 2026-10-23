@@ -1,4 +1,5 @@
 import type { HardwareSectionProps } from "./HardwareSectionTypes";
+import { Icon } from "../Icon";
 
 export function CpuSection(props: HardwareSectionProps) {
   const {
@@ -70,7 +71,8 @@ export function CpuSection(props: HardwareSectionProps) {
                     <tr className="group-row">
                       <td colSpan={5}>
                         <span className="sensor-subcat">
-                          ⚡ FRECUENCIAS Y RELOJES
+                          <Icon name="chip" size={14} />
+                          FRECUENCIAS Y RELOJES
                         </span>
                       </td>
                     </tr>
@@ -113,7 +115,10 @@ export function CpuSection(props: HardwareSectionProps) {
                     {/* Temperatures */}
                     <tr className="group-row">
                       <td colSpan={5}>
-                        <span className="sensor-subcat">🌡️ TEMPERATURAS</span>
+                        <span className="sensor-subcat">
+                          <Icon name="thermometer" size={14} />
+                          TEMPERATURAS
+                        </span>
                       </td>
                     </tr>
                     <tr>
@@ -150,7 +155,10 @@ export function CpuSection(props: HardwareSectionProps) {
                     {/* Utilization */}
                     <tr className="group-row">
                       <td colSpan={5}>
-                        <span className="sensor-subcat">📊 UTILIZACIÓN</span>
+                        <span className="sensor-subcat">
+                          <Icon name="pulse" size={14} />
+                          UTILIZACIÓN
+                        </span>
                       </td>
                     </tr>
                     <tr>

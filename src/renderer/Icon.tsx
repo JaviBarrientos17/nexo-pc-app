@@ -9,6 +9,12 @@ export type IconName =
   | "refresh"
   | "settings"
   | "shield"
+  | "language"
+  | "home"
+  | "check"
+  | "alert"
+  | "thermometer"
+  | "trash"
   | "arrow"
   | "more"
   | "download"
@@ -66,6 +72,35 @@ export function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
       <>
         <path d="M12 3 20 6v5c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6l8-3Z" />
         <path d="m8.7 12 2.1 2.1 4.6-4.6" />
+      </>
+    ),
+    language: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" />
+      </>
+    ),
+    home: (
+      <>
+        <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-6v-6h-4v6H4a1 1 0 0 1-1-1V10Z" />
+      </>
+    ),
+    check: <path d="m5 12 4 4L19 6" />,
+    alert: (
+      <>
+        <path d="m10.3 3.9-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3.1l-8-14a2 2 0 0 0-3.4 0Z" />
+        <path d="M12 9v4m0 4h.01" />
+      </>
+    ),
+    thermometer: (
+      <>
+        <path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0Z" />
+        <path d="M12 11v7" />
+      </>
+    ),
+    trash: (
+      <>
+        <path d="M4 7h16M10 11v6m4-6v6M5 7l1 14h12l1-14M9 7V4h6v3" />
       </>
     ),
     arrow: <path d="m9 18 6-6-6-6" />,
@@ -135,7 +170,7 @@ export function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.8"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -144,4 +179,3 @@ export function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
     </svg>
   );
 }
-

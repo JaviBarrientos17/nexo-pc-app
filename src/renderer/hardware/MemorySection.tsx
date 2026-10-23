@@ -1,4 +1,5 @@
 import type { HardwareSectionProps } from "./HardwareSectionTypes";
+import { Icon } from "../Icon";
 
 export function MemorySection(props: HardwareSectionProps) {
   const {
@@ -69,7 +70,8 @@ export function MemorySection(props: HardwareSectionProps) {
                     <tr className="group-row">
                       <td colSpan={5}>
                         <span className="sensor-subcat">
-                          📊 MEMORIA FÍSICA
+                          <Icon name="chip" size={14} />
+                          MEMORIA FÍSICA
                         </span>
                       </td>
                     </tr>
@@ -143,7 +145,8 @@ export function MemorySection(props: HardwareSectionProps) {
                     <tr className="group-row">
                       <td colSpan={5}>
                         <span className="sensor-subcat">
-                          💾 MEMORIA VIRTUAL / ARCHIVO DE PAGINACIÓN
+                          <Icon name="chip" size={14} />
+                          MEMORIA VIRTUAL / ARCHIVO DE PAGINACIÓN
                         </span>
                       </td>
                     </tr>

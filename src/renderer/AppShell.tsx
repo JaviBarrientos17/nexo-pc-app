@@ -119,6 +119,17 @@ export function AppShell({
           <span className="titlebar-separator">/</span>
           <strong>{section}</strong>
         </div>
+        {updateState.status === "available" && (
+          <button
+            className="titlebar-update-button"
+            onClick={() => onNavigate("Actualizaciones")}
+            aria-label="Nueva actualización disponible. Abrir Actualizaciones"
+            title="Nueva actualización disponible"
+          >
+            <Icon name="download" size={14} />
+            <span>Nueva actualización</span>
+          </button>
+        )}
         <button
           className="theme-switch"
           role="switch"
@@ -163,7 +174,7 @@ export function AppShell({
                 key={item.label}
               >
                 <span className={`nav-icon-badge nav-icon-${item.icon}`}>
-                  <Icon name={item.icon} size={15} />
+                  <Icon name={item.icon} size={16} />
                 </span>
                 <span>{item.label}</span>
               </button>
@@ -185,10 +196,13 @@ export function AppShell({
                 key={item.label}
               >
                 <span className={`nav-icon-badge nav-icon-${item.icon}`}>
-                  <Icon name={item.icon} size={15} />
+                  <Icon name={item.icon} size={16} />
                 </span>
                 <span>{item.label}</span>
-                {item.label === "Actualizaciones" && <i className="nav-dot" />}
+                {item.label === "Actualizaciones" &&
+                  updateState.status === "available" && (
+                    <i className="nav-dot" />
+                  )}
               </button>
             ))}
           </nav>

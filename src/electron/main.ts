@@ -3,6 +3,7 @@ import { writeFile } from "node:fs/promises";
 import { release as getOsRelease } from "node:os";
 import path from "node:path";
 import { autoUpdater, NsisUpdater } from "electron-updater";
+import { cleanSelectedItems, getCleanupPreview } from "./cleanup";
 import { getHardwareReport, getSystemSnapshot, isSupportedWindowsVersion } from "./system";
 import type {
   CleanupItem,
@@ -264,10 +265,17 @@ ipcMain.handle("window:set-theme", (_event, theme: "light" | "dark") => {
 ipcMain.handle("system:snapshot", getSystemSnapshot);
 ipcMain.handle("hardware:report", getHardwareReport);
 
-ipcMain.handle("cleanup:preview", (): CleanupItem[] => [
-  { label: "Archivos temporales de usuario", path: "%TEMP%", sizeMb: 0, selected: true },
-  { label: "Papelera de reciclaje", path: "Recycle Bin", sizeMb: 0, selected: false }
-]);
+ipcMain.handle("cleanup:preview", (): Promise<CleanupItem[]> => getCleanupPreview());
+ipcMain.handle("cleanup:run", (_event, ids: unknown) => {
+  if (
+    !Array.isArray(ids) ||
+    ids.length === 0 ||
+    ids.some((id) => id !== "user-temp" && id !== "recycle-bin")
+  ) {
+    throw new TypeError("La solicitud de limpieza no es válida.");
+  }
+  return cleanSelectedItems(ids);
+});
 ipcMain.handle("update:download", () => {
   sendUpdateState({
     status: "downloading",
