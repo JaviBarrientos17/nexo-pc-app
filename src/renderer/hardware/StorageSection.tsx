@@ -13,9 +13,7 @@ export function StorageSection(props: HardwareSectionProps) {
     loadTone,
   } = props;
   return (
-    <>
-      {/* 5. Storage / Disks */}
-      {(category === "all" || category === "storage") &&
+    <>      {(category === "all" || category === "storage") &&
         matchesSearch(
           "Almacenamiento Discos SSD NVMe HDD SATA " +
             (report?.physicalDisks
@@ -25,6 +23,15 @@ export function StorageSection(props: HardwareSectionProps) {
           <section className="hw-card">
             <header
               className="hw-card-header"
+              role="button"
+              tabIndex={0}
+              aria-expanded={!collapsed.storage}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  toggleSection("storage");
+                }
+              }}
               onClick={() => toggleSection("storage")}
             >
               <div className="hw-header-title">
@@ -56,9 +63,7 @@ export function StorageSection(props: HardwareSectionProps) {
             </header>
 
             {!collapsed.storage && (
-              <div className="hw-card-body">
-                {/* Physical Disks List */}
-                <p className="sub-section-title">
+              <div className="hw-card-body">                <p className="sub-section-title">
                   UNIDADES FÍSICAS DETECTADAS
                 </p>
                 <div className="physical-disks-grid">
@@ -79,10 +84,7 @@ export function StorageSection(props: HardwareSectionProps) {
                       <div className="pdisk-capacity">{pdisk.sizeGb} GB</div>
                     </div>
                   ))}
-                </div>
-
-                {/* Logical Volumes Table */}
-                <p
+                </div>                <p
                   className="sub-section-title"
                   style={{ marginTop: "24px" }}
                 >

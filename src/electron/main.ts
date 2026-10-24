@@ -183,14 +183,14 @@ function createWindow() {
     minWidth: 760,
     minHeight: 600,
     icon: iconPath,
-    backgroundColor: "#161618",
+    backgroundColor: "#fafafa",
     title: "Nexo PC",
     ...(process.platform === "win32"
       ? {
           titleBarStyle: "hidden" as const,
           titleBarOverlay: {
-            color: "#f5f5f7",
-            symbolColor: "#5f6066",
+            color: "#fafafa",
+            symbolColor: "#4c4c4c",
             height: 42
           }
         }
@@ -255,8 +255,8 @@ ipcMain.handle("window:isMaximized", () => mainWindow?.isMaximized() ?? false);
 ipcMain.handle("window:set-theme", (_event, theme: "light" | "dark") => {
   if (process.platform !== "win32" || !mainWindow) return;
   mainWindow.setTitleBarOverlay({
-    color: theme === "dark" ? "#27272a" : "#f5f5f7",
-    symbolColor: theme === "dark" ? "#d4d4d8" : "#5f6066",
+    color: theme === "dark" ? "#151515" : "#fafafa",
+    symbolColor: theme === "dark" ? "#c2c2c2" : "#4c4c4c",
     height: 42
   });
 });

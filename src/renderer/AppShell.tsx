@@ -1,7 +1,7 @@
 import type { ReactNode, RefObject } from "react";
 import type { UpdateNotice, UpdateState } from "../shared/types";
 import { Icon, type IconName } from "./Icon";
-import appIcon from "../../assets/icon.png";
+import appMark from "../../assets/icon.svg";
 
 const systemNav: Array<{ label: string; icon: IconName }> = [
   { label: "Resumen", icon: "grid" },
@@ -114,7 +114,6 @@ export function AppShell({
           </button>
         </div>
         <div className="titlebar-title">
-          <img className="titlebar-app-mark" src={appIcon} alt="" />
           <span>Nexo PC</span>
           <span className="titlebar-separator">/</span>
           <strong>{section}</strong>
@@ -137,9 +136,9 @@ export function AppShell({
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="brand">
-            <img className="brand-symbol" src={appIcon} alt="" />
+            <img className="brand-monogram" src={appMark} alt="" />
             <div className="brand-text">
-              <span className="brand-name">Nexo PC</span>
+              <span className="brand-name">nexo<span> / PC</span></span>
             </div>
           </div>
         </div>
@@ -161,6 +160,8 @@ export function AppShell({
                 className={section === item.label ? "nav active" : "nav"}
                 onClick={() => onNavigate(item.label)}
                 key={item.label}
+                aria-current={section === item.label ? "page" : undefined}
+                title={item.label}
               >
                 <span className={`nav-icon-badge nav-icon-${item.icon}`}>
                   <Icon name={item.icon} size={15} />
@@ -183,12 +184,14 @@ export function AppShell({
                     : onNavigate(item.label)
                 }
                 key={item.label}
+                aria-current={section === item.label ? "page" : undefined}
+                title={item.label}
               >
                 <span className={`nav-icon-badge nav-icon-${item.icon}`}>
                   <Icon name={item.icon} size={15} />
                 </span>
                 <span>{item.label}</span>
-                {item.label === "Actualizaciones" && <i className="nav-dot" />}
+                {item.label === "Actualizaciones" && update && !update.downloaded && <i className="nav-dot" />}
               </button>
             ))}
           </nav>
@@ -198,6 +201,8 @@ export function AppShell({
               section === "Ajustes" ? "nav active settings" : "nav settings"
             }
             onClick={() => onNavigate("Ajustes")}
+            aria-current={section === "Ajustes" ? "page" : undefined}
+            title="Ajustes"
           >
             <span className="nav-icon-badge nav-icon-settings">
               <Icon name="settings" size={15} />
@@ -209,13 +214,12 @@ export function AppShell({
         <div className="sidebar-footer">
           <div className="device-card">
             <span className="device-icon">
-              <Icon name="shield" size={15} />
+              <Icon name="chip" size={15} />
             </span>
             <div>
-              <strong>Diagnóstico Local</strong>
-              <small>Protección activa</small>
+              <strong>Diagnóstico local</strong>
+              <small>Datos en este equipo</small>
             </div>
-            <span className="status-indicator-dot" />
           </div>
         </div>
       </aside>
@@ -230,7 +234,7 @@ export function AppShell({
           <div className="topbar-actions">
             <span className="live-indicator">
               <i />
-              En directo
+              Actualización automática
             </span>
             <div className="view-options" ref={optionsRef}>
               <button

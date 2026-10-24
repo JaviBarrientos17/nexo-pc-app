@@ -19,31 +19,29 @@ export function DashboardHero({
   return (
     <section className="hero">
       <div>
-        <p className="eyebrow">VISIÓN GENERAL</p>
+        <p className="eyebrow">{snapshot?.computerName ?? "MI EQUIPO"}</p>
         <h1>
           {snapshot
             ? requiresAttention
               ? "Hay métricas que revisar"
-              : "Resumen del equipo"
-            : "Preparando tu primer resumen"}
-          <span className="title-dot">.</span>
+              : "Tu equipo, de un vistazo"
+            : "Leyendo tu equipo"}
         </h1>
         <p className="hero-copy">
           {snapshot
-            ? "Consulta las métricas disponibles y el estado de los componentes detectados."
+            ? "Rendimiento, componentes y estado del sistema."
             : "Recopilando los datos iniciales del equipo para mostrar el resumen."}
         </p>
       </div>
-      <div
-        className="scan-status"
-        style={{ cursor: "pointer" }}
+      <button
+        className={`scan-status${dataError ? " has-error" : requiresAttention ? " needs-attention" : ""}`}
         onClick={onOpenHardware}
         title="Abrir detalles del hardware"
       >
         <span className="scan-ring">
-          <Icon name="shield" size={21} />
+          <Icon name={dataError || requiresAttention ? "pulse" : "clock"} size={18} />
         </span>
-        <div>
+        <span>
           <strong>
             {dataError
               ? "Datos no disponibles"
@@ -56,11 +54,12 @@ export function DashboardHero({
           <small>
             {dataError ||
               (snapshot
-                ? `Analizado a las ${displayTime(snapshot, language)} · Clic para Telemetría`
+                ? `Última lectura · ${displayTime(snapshot, language)}`
                 : "La primera lectura puede tardar unos segundos.")}
           </small>
-        </div>
-      </div>
+        </span>
+        <Icon name="arrow" size={15} />
+      </button>
     </section>
   );
 }

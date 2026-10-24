@@ -13,9 +13,7 @@ export function CpuSection(props: HardwareSectionProps) {
     loadTone,
   } = props;
   return (
-    <>
-      {/* 2. CPU / Processor */}
-      {(category === "all" || category === "cpu") &&
+    <>      {(category === "all" || category === "cpu") &&
         matchesSearch(
           "CPU Procesador Intel AMD Reloj Frecuencia Temperatura Carga " +
             (report?.cpu.name || ""),
@@ -23,6 +21,15 @@ export function CpuSection(props: HardwareSectionProps) {
           <section className="hw-card">
             <header
               className="hw-card-header"
+              role="button"
+              tabIndex={0}
+              aria-expanded={!collapsed.cpu}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  toggleSection("cpu");
+                }
+              }}
               onClick={() => toggleSection("cpu")}
             >
               <div className="hw-header-title">
@@ -65,12 +72,10 @@ export function CpuSection(props: HardwareSectionProps) {
                       <th style={{ width: "10%" }}>Nivel</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {/* Clocks */}
-                    <tr className="group-row">
+                  <tbody>                    <tr className="group-row">
                       <td colSpan={5}>
                         <span className="sensor-subcat">
-                          ⚡ FRECUENCIAS Y RELOJES
+                          FRECUENCIAS Y RELOJES
                         </span>
                       </td>
                     </tr>
@@ -108,12 +113,9 @@ export function CpuSection(props: HardwareSectionProps) {
                           />
                         </div>
                       </td>
-                    </tr>
-
-                    {/* Temperatures */}
-                    <tr className="group-row">
+                    </tr>                    <tr className="group-row">
                       <td colSpan={5}>
-                        <span className="sensor-subcat">🌡️ TEMPERATURAS</span>
+                        <span className="sensor-subcat">TEMPERATURAS</span>
                       </td>
                     </tr>
                     <tr>
@@ -145,12 +147,9 @@ export function CpuSection(props: HardwareSectionProps) {
                           />
                         </div>
                       </td>
-                    </tr>
-
-                    {/* Utilization */}
-                    <tr className="group-row">
+                    </tr>                    <tr className="group-row">
                       <td colSpan={5}>
-                        <span className="sensor-subcat">📊 UTILIZACIÓN</span>
+                        <span className="sensor-subcat">UTILIZACIÓN</span>
                       </td>
                     </tr>
                     <tr>

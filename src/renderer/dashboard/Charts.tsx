@@ -57,7 +57,7 @@ export function CpuHistoryChart({
 }) {
   const plotTop = 12;
   const plotBottom = 158;
-  const line = makeLinePath(values, 620, plotBottom - plotTop, 0, plotTop);
+  const line = values.length > 1 ? makeLinePath(values, 620, plotBottom - plotTop, 0, plotTop) : "";
   const area = line ? `${line} L 620 ${plotBottom} L 0 ${plotBottom} Z` : "";
   const horizontalLevels = [100, 75, 50, 25, 0];
 
@@ -71,15 +71,9 @@ export function CpuHistoryChart({
       <svg
         viewBox={`0 0 620 ${plotBottom + 12}`}
         preserveAspectRatio="none"
-        aria-label={`Historial de uso de CPU durante los últimos 60 segundos. Uso actual ${Math.round(current)} por ciento.`}
+        aria-label={`Historial de uso de CPU: ${values.length} lecturas. Uso actual ${Math.round(current)} por ciento.`}
         role="img"
       >
-        <defs>
-          <linearGradient id="cpu-fill" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#258df2" stopOpacity=".42" />
-            <stop offset="100%" stopColor="#258df2" stopOpacity=".02" />
-          </linearGradient>
-        </defs>
         <path
           className="chart-grid"
           d={horizontalLevels
@@ -96,13 +90,9 @@ export function CpuHistoryChart({
         {area && <path className="chart-area" d={area} />}
         {line && <path className="chart-line" d={line} />}
       </svg>
+      {values.length < 2 && <span className="chart-empty">Esperando más lecturas para mostrar la actividad</span>}
       <div className="chart-times">
-        <span>60 s</span>
-        <span>50 s</span>
-        <span>40 s</span>
-        <span>30 s</span>
-        <span>20 s</span>
-        <span>10 s</span>
+        <span>{values.length === 1 ? "1 lectura" : `Últimas ${values.length} lecturas`}</span>
         <span>ahora</span>
       </div>
     </div>

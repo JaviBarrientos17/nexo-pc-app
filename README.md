@@ -1,83 +1,126 @@
+<img src="assets/icon.svg" width="64" height="64" alt="Icono de Nexo PC" />
+
 # Nexo PC
 
-**Diagnóstico y mantenimiento local para Windows.** Nexo PC reúne en una sola aplicación el estado del equipo, la telemetría del hardware y herramientas de revisión segura.
+Diagnóstico local para Windows. Consulta el rendimiento, los componentes y el almacenamiento de tu equipo desde una interfaz sencilla, con temas claro y oscuro.
+
+**Versión del código: 0.20.0** · Windows x64
+
+[Descargar el instalador de Windows](https://github.com/JaviBarrientos17/nexo-pc-app/releases/latest) · [Publicaciones y versiones](https://github.com/JaviBarrientos17/nexo-pc-app/releases)
+
+![Resumen de Nexo PC en modo claro](assets/screenshots/resumen.png)
+
+## Instalar y empezar
+
+1. Abre la última publicación y descarga el archivo `Nexo-PC-Setup-<version>-x64.exe`.
+2. Ejecuta el instalador y elige la carpeta de destino.
+3. Abre **Nexo PC** desde el escritorio o el menú Inicio. La primera lectura puede tardar unos segundos.
+
+La aplicación instalada no necesita Node.js ni npm. Requiere Windows 10 1809–22H2 o Windows 11, en un equipo x64.
+
+## Qué puedes hacer
+
+| Sección | Función |
+| --- | --- |
+| Resumen | Consulta CPU, memoria, almacenamiento y GPU. Cada métrica abre directamente su componente. |
+| Hardware | Filtra componentes, busca sensores y consulta valores actuales, mínimos y máximos. Puedes pausar el registro de mín./máx. y restablecerlo. |
+| Salud del sistema | Revisa las comprobaciones disponibles de procesador, memoria, discos y placa base. |
+| Unidades | Consulta capacidad, espacio disponible y detalles de discos físicos y volúmenes. |
+| Limpieza | Previsualiza las ubicaciones previstas para limpieza. Esta versión no elimina archivos. |
+| Actualizaciones | Busca y descarga nuevas versiones publicadas en GitHub. |
+| Ajustes | Cambia entre español e inglés y entre los temas claro y oscuro. |
+
+El menú de opciones de cada vista permite exportar sus datos como **TXT** o **CSV**.
+
+Los datos de hardware se recopilan localmente mediante CIM/WMI. El muestreo se realiza cada 15 segundos, o cada 30 segundos en equipos con cuatro hilos o menos, y se pausa mientras la ventana está oculta. Las comprobaciones y descargas de actualizaciones acceden a GitHub.
+
+Las lecturas dependen de lo que Windows y los controladores puedan proporcionar. Una temperatura o un estado SMART no disponible se muestra como tal.
 
 ## Capturas
 
-Las capturas muestran las siete secciones principales de Nexo PC. Los valores de hardware son de ejemplo y pueden variar según el equipo.
+Capturas de la aplicación 0.20.0 con **datos de ejemplo**. Los valores y sensores disponibles cambian según el equipo.
 
-### Resumen
+<details>
+<summary>Resumen en modo oscuro</summary>
 
-Vista rápida de CPU, memoria, almacenamiento, GPU, actividad del procesador y puntos de control del sistema.
+![Resumen de Nexo PC en modo oscuro](assets/screenshots/resumen-oscuro.png)
 
-![Panel de resumen de Nexo PC](assets/screenshots/resumen.png)
+</details>
 
-### Hardware y sensores
+<details>
+<summary>Hardware y sensores</summary>
 
-Consulta los componentes y las lecturas disponibles, filtra por categoría, busca sensores y pausa o restablece el seguimiento de valores mínimos y máximos.
+![Filtros de componentes y lecturas actuales, mínimas y máximas](assets/screenshots/hardware.png)
 
-![Hardware y sensores de Nexo PC](assets/screenshots/hardware.png)
+</details>
 
-### Salud del sistema
+<details>
+<summary>Salud del sistema</summary>
 
-Estado general y comprobaciones disponibles de procesador, memoria, almacenamiento y placa base.
+![Comprobaciones del estado del equipo](assets/screenshots/salud-sistema.png)
 
-![Salud del sistema en Nexo PC](assets/screenshots/salud-sistema.png)
+</details>
 
-### Unidades
+<details>
+<summary>Unidades y almacenamiento</summary>
 
-Revisa el espacio de almacenamiento y los detalles de las unidades físicas y lógicas.
+![Discos físicos, volúmenes y espacio disponible](assets/screenshots/unidades.png)
 
-![Unidades de Nexo PC](assets/screenshots/unidades.png)
+</details>
 
-### Limpieza segura
+<details>
+<summary>Previsualización de limpieza</summary>
 
-Consulta la previsualización de elementos que se pueden revisar. Esta versión no elimina archivos.
+![Ubicaciones previstas para limpieza, sin borrado de archivos](assets/screenshots/limpieza.png)
 
-![Previsualización de limpieza de Nexo PC](assets/screenshots/limpieza.png)
+</details>
 
-### Actualizaciones
+<details>
+<summary>Actualizaciones</summary>
 
-Consulta el estado de la aplicación y busca actualizaciones disponibles.
+![Estado de las actualizaciones de Nexo PC](assets/screenshots/actualizaciones.png)
 
-![Actualizaciones de Nexo PC](assets/screenshots/actualizaciones.png)
+</details>
 
-### Ajustes
+<details>
+<summary>Ajustes</summary>
 
-Configura el idioma y la apariencia, y consulta las opciones de actualización y privacidad.
+![Preferencias de idioma, apariencia y privacidad](assets/screenshots/ajustes.png)
 
-![Ajustes de Nexo PC](assets/screenshots/ajustes.png)
+</details>
 
-## Funciones
+## Helvetica en Windows
 
-- **Resumen:** lecturas de CPU, memoria, GPU y discos, además del historial de actividad de CPU.
-- **Hardware:** sensores y componentes organizados por categorías, con búsqueda, filtros y seguimiento mín./máx.
-- **Salud del sistema:** comprobaciones de hardware y estado general.
-- **Unidades:** resumen del almacenamiento, uso y detalles de unidades físicas y lógicas.
-- **Limpieza:** previsualización de ubicaciones seguras; no se borra nada.
-- **Actualizaciones:** al abrir la aplicación instalada comprueba las publicaciones de GitHub Releases y avisa si hay una versión nueva. Al descargar, obtiene el instalador de la publicación; se instala al finalizar y la aplicación se reinicia automáticamente.
-- **Ajustes:** cambia entre tema claro y oscuro y permite consultar o iniciar una actualización aunque se haya cerrado el aviso inicial.
-- **Exportación:** exporta los datos de la vista actual como TXT o CSV desde el menú de opciones.
-
-Los datos de diagnóstico se recopilan localmente en Windows mediante CIM/WMI. La interfaz se actualiza automáticamente y se adapta a distintos tamaños de pantalla.
-Para reducir el uso de CPU y evitar consultas innecesarias, la telemetría se actualiza cada 15 segundos (30 segundos en equipos con 4 hilos o menos) y se pausa mientras la ventana está oculta.
-
-## Requisitos
-
-- Windows 10 versión 1809–22H2 (compilaciones 17763–19045) o Windows 11.
-- Instalador disponible para x64.
-- Node.js y npm
-
-## Iniciar en desarrollo
+La interfaz utiliza Helvetica si está instalada, con Arial como alternativa. Para instalar el pack local `helvetica-255.zip` para tu usuario, ejecuta desde la carpeta del repositorio:
 
 ```powershell
-npm install
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Install-Helvetica.ps1
+```
+
+El script busca el ZIP en `Downloads` y no necesita permisos de administrador. También puedes indicar otra ubicación o comprobar primero qué cambios haría:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Install-Helvetica.ps1 -ArchivePath "C:\ruta\helvetica-255.zip" -WhatIf
+```
+
+Para instalar, repite el comando sin `-WhatIf` y vuelve a abrir Nexo PC. Se reconocen las siete variantes del pack; si ya existe una versión diferente de alguna fuente, el script se detiene antes de sustituir archivos.
+
+Cada usuario debe disponer de su copia con licencia. El ZIP y los archivos de Helvetica no se incluyen en este repositorio ni en el instalador de la aplicación.
+
+## Desarrollo
+
+Necesitas Git, Windows y Node.js 22 con npm, la versión usada en GitHub Actions.
+
+```powershell
+git clone https://github.com/JaviBarrientos17/nexo-pc-app.git
+cd nexo-pc-app
+npm ci
 npm start
 ```
 
 `npm start` compila la interfaz y el proceso de Electron antes de abrir la aplicación.
 
-## Comprobar y compilar
+### Comprobar y compilar
 
 ```powershell
 npm run lint
@@ -85,12 +128,26 @@ npm test
 npm run build
 ```
 
-## Crear el instalador de Windows
+### Crear el instalador
 
 ```powershell
 npm run package:win
 ```
 
-El empaquetado usa NSIS y genera un instalador `.exe` para x64, con la arquitectura indicada en el nombre del archivo. GitHub Actions adjunta el instalador, su `.blockmap` y el manifiesto `latest.yml` a una publicación de GitHub Releases. No hace falta configurar un servicio de hosting, bucket ni secretos adicionales: el workflow usa `GITHUB_TOKEN`, con permiso de escritura de contenido ya declarado. El repositorio debe ser público para que cualquier usuario pueda descargar las actualizaciones sin autenticación. Para empaquetar localmente, ejecuta `npm run package:win`; este comando no publica nada. Si se configuran los secretos opcionales de firma `WIN_CSC_LINK` y `WIN_CSC_KEY_PASSWORD`, electron-builder firma el instalador; sin ellos, lo genera sin firmar. El workflow de GitHub Actions actualiza y confirma la versión de `package.json` y `package-lock.json` como `0.1.<número de ejecución>` antes de publicar una actualización al recibir cambios en `main`.
+El resultado se guarda en `release/`: instalador de Windows x64, archivo `.blockmap` y manifiesto `latest.yml`. Este comando no publica archivos en GitHub.
 
-Para consultar el alcance y las decisiones del producto, revisa [docs/PLAN_INICIAL.md](docs/PLAN_INICIAL.md).
+### Publicar una versión
+
+La versión se declara en `package.json` y `package-lock.json`. Antes de publicar una nueva versión:
+
+```powershell
+npm version <version> --no-git-tag-version
+```
+
+Confirma ambos archivos junto con los cambios. Al integrar la rama en `main`, el [workflow de publicación](.github/workflows/release.yml) comprueba el código, compila y publica el instalador, su `.blockmap` y `latest.yml` bajo la etiqueta `v<version>`. Conserva la versión declarada; cada publicación necesita una etiqueta nueva.
+
+El workflow usa `GITHUB_TOKEN`. La firma del instalador es opcional y se configura con `WIN_CSC_LINK` y `WIN_CSC_KEY_PASSWORD`. El repositorio debe ser público para que la aplicación pueda descargar las actualizaciones sin autenticación.
+
+## Documentación
+
+[Alcance y decisiones del producto](docs/PLAN_INICIAL.md)
