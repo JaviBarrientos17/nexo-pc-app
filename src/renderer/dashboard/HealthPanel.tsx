@@ -69,6 +69,7 @@ export function HealthPanel({
           className="icon-button"
           onClick={onOpenHardware}
           title="Ver Sensores de Hardware"
+          aria-label="Ver sensores de hardware"
         >
           <Icon name="arrow" size={18} />
         </button>

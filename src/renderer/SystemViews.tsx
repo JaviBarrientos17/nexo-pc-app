@@ -6,6 +6,7 @@ import type {
 } from "../shared/types";
 import type { Language } from "./localization";
 import { Icon } from "./Icon";
+import appMark from "../../assets/icon.png";
 
 export function UpdatesView({
   state,
@@ -331,9 +332,7 @@ export function SettingsView({
       <section className="settings-section">
         <p className="section-kicker">APLICACIÓN</p>
         <article className="surface settings-card settings-info-row">
-          <span className="settings-brand-mark">
-            <i />
-          </span>
+          <img className="settings-brand-mark" src={appMark} alt="" />
           <div>
             <strong>Nexo PC</strong>
             <small>Diagnóstico y mantenimiento local</small>

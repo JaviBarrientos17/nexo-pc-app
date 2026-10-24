@@ -15,7 +15,6 @@ export function MemorySection(props: HardwareSectionProps) {
   } = props;
   return (
     <>
-      {/* 4. Memory (RAM) */}
       {(category === "all" || category === "ram") &&
         matchesSearch(
           "RAM Memoria DDR4 DDR5 Corsair Kingston Slots " +
@@ -26,6 +25,15 @@ export function MemorySection(props: HardwareSectionProps) {
           <section className="hw-card">
             <header
               className="hw-card-header"
+              role="button"
+              tabIndex={0}
+              aria-expanded={!collapsed.ram}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  toggleSection("ram");
+                }
+              }}
               onClick={() => toggleSection("ram")}
             >
               <div className="hw-header-title">
@@ -70,7 +78,6 @@ export function MemorySection(props: HardwareSectionProps) {
                     <tr className="group-row">
                       <td colSpan={5}>
                         <span className="sensor-subcat">
-                          <Icon name="chip" size={14} />
                           MEMORIA FÍSICA
                         </span>
                       </td>
@@ -145,7 +152,6 @@ export function MemorySection(props: HardwareSectionProps) {
                     <tr className="group-row">
                       <td colSpan={5}>
                         <span className="sensor-subcat">
-                          <Icon name="chip" size={14} />
                           MEMORIA VIRTUAL / ARCHIVO DE PAGINACIÓN
                         </span>
                       </td>
@@ -197,8 +203,6 @@ export function MemorySection(props: HardwareSectionProps) {
                       </tr>
                     </tbody>
                   </table>
-
-                  {/* RAM Modules Details Table */}
                   {report?.memory.modules &&
                     report.memory.modules.length > 0 && (
                       <div className="sub-module-section">

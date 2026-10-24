@@ -8,19 +8,17 @@ export function HardwareActionPanel({
   return (
     <article className="surface action-panel">
       <div className="action-orb">
-        <Icon name="sparkles" size={26} />
+        <Icon name="chip" size={22} />
       </div>
-      <p className="section-kicker">MANTENIMIENTO & HARDWARE</p>
+      <p className="section-kicker">EXPLORAR EL EQUIPO</p>
       <h2>
-        Telemetría avanzada
-        <br />
-        de hardware y sensores.
+        Más allá del resumen
       </h2>
       <p className="muted">
-        Monitorea frecuencias, temperaturas, voltajes y consumos en tiempo real.
+        Consulta los sensores disponibles, compara lecturas y sigue sus mínimos y máximos.
       </p>
       <button className="primary-button" onClick={onOpenHardware}>
-        Ver Sensores de Hardware <Icon name="arrow" size={16} />
+        Explorar hardware <Icon name="arrow" size={16} />
       </button>
     </article>
   );

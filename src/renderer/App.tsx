@@ -15,6 +15,7 @@ import type {
   UpdateState,
 } from "../shared/types";
 import { HardwareMonitor } from "./HardwareMonitor";
+import type { CategoryFilter } from "./hardware/HardwareSectionTypes";
 import { CleanupView } from "./CleanupView";
 import { Dashboard, meter, snapshotFromReport } from "./Dashboard";
 import { AppShell } from "./AppShell";
@@ -73,8 +74,10 @@ function isHardwareSection(target: string) {
 
 export function App() {
   const [snapshot, setSnapshot] = useState<SystemSnapshot>();
+  const [cpuHistory, setCpuHistory] = useState<number[]>([]);
   const [hardware, setHardware] = useState<HardwareReport>();
   const [section, setSection] = useState("Resumen");
+  const [hardwareCategory, setHardwareCategory] = useState<CategoryFilter>("all");
   const [sectionHistory, setSectionHistory] = useState(["Resumen"]);
   const [historyIndex, setHistoryIndex] = useState(0);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -110,7 +113,15 @@ export function App() {
   const hardwareLoadingCountRef = useRef(0);
   const dismissedUpdateVersionRef = useRef<string | undefined>(undefined);
 
+  useEffect(() => {
+    const usage = snapshot?.cpu.usagePercent;
+    if (usage !== undefined) {
+      setCpuHistory((history) => [...history, meter(usage)].slice(-40));
+    }
+  }, [snapshot]);
+
   const navigateTo = async (target: string) => {
+    if (target === "Hardware") setHardwareCategory("all");
     if (target === section) return;
     if (isHardwareSection(target)) await loadHardwareWithSpinner();
     const nextHistory = historyRef.current.slice(
@@ -595,7 +606,7 @@ export function App() {
 
   const page =
     section === "Hardware" ? (
-      <HardwareMonitor report={hardware} onRefresh={loadData} />
+      <HardwareMonitor report={hardware} onRefresh={loadData} initialCategory={hardwareCategory} />
     ) : section === "Unidades" ? (
       <DrivesView report={hardware} />
     ) : section === "Salud del sistema" ? (
@@ -632,14 +643,17 @@ export function App() {
       />
     ) : (
       <Dashboard
+        cpuHistory={cpuHistory}
         snapshot={snapshot}
         hardware={hardware}
         dataError={dataError}
         language={language}
         memoryPercent={memoryPercent}
         updateState={updateState}
-        onOpenHardware={() => navigateTo("Hardware")}
-        onOpenHardwareStatus={() => void openHardware()}
+        onOpenHardware={(category = "all") => {
+          navigateTo("Hardware");
+          setHardwareCategory(category);
+        }}
       />
     );
 

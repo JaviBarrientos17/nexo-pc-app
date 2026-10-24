@@ -15,7 +15,6 @@ export function GpuSection(props: HardwareSectionProps) {
   } = props;
   return (
     <>
-      {/* 3. GPU / Graphics */}
       {(category === "all" || category === "gpu") &&
         matchesSearch(
           "GPU Gráfica Nvidia Radeon Intel GeForce VRAM " +
@@ -24,6 +23,15 @@ export function GpuSection(props: HardwareSectionProps) {
           <section className="hw-card">
             <header
               className="hw-card-header"
+              role="button"
+              tabIndex={0}
+              aria-expanded={!collapsed.gpu}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  toggleSection("gpu");
+                }
+              }}
               onClick={() => toggleSection("gpu")}
             >
               <div className="hw-header-title">
@@ -72,13 +80,11 @@ export function GpuSection(props: HardwareSectionProps) {
                     </tr>
                   </thead>
                   <tbody>
-                    {/* Temperature */}
                     {report?.gpu.temperatureC !== undefined && (
                       <>
                         <tr className="group-row">
                           <td colSpan={5}>
                             <span className="sensor-subcat">
-                              <Icon name="thermometer" size={14} />
                               TEMPERATURA GPU
                             </span>
                           </td>
@@ -115,12 +121,9 @@ export function GpuSection(props: HardwareSectionProps) {
                         </tr>
                     </>
                       )}
-
-                      {/* Utilization */}
                       <tr className="group-row">
                         <td colSpan={5}>
                           <span className="sensor-subcat">
-                            <Icon name="pulse" size={14} />
                             UTILIZACIÓN & CARGA
                           </span>
                         </td>
@@ -193,14 +196,11 @@ export function GpuSection(props: HardwareSectionProps) {
                           </td>
                         </tr>
                       )}
-
-                      {/* VRAM Memory */}
                       {report?.gpu.memoryTotalMb !== undefined && (
                         <>
                           <tr className="group-row">
                             <td colSpan={5}>
                               <span className="sensor-subcat">
-                                <Icon name="chip" size={14} />
                                 MEMORIA DE VIDEO (VRAM)
                               </span>
                             </td>
@@ -244,15 +244,12 @@ export function GpuSection(props: HardwareSectionProps) {
                           </tr>
                         </>
                       )}
-
-                      {/* Power & Fan */}
                       {(report?.gpu.powerDrawWatts !== undefined ||
                         report?.gpu.fanSpeedPercent !== undefined) && (
                         <>
                           <tr className="group-row">
                             <td colSpan={5}>
                               <span className="sensor-subcat">
-                                <Icon name="pulse" size={14} />
                                 ENERGÍA & VENTILADORES
                               </span>
                             </td>

@@ -73,23 +73,18 @@ export function CleanupView({
       <section className="hero cleanup-hero">
         <div>
           <p className="eyebrow">MANTENIMIENTO SEGURO</p>
-          <h1>
-            Haz espacio
-            <br />
-            con tranquilidad
-          </h1>
+          <h1>Revisión de limpieza</h1>
           <p className="hero-copy">
-            Revisa cuánto espacio puedes liberar. Los temporales recientes se
-            conservan y no se elimina nada sin tu confirmación.
+            Consulta las ubicaciones previstas para limpieza. Esta versión no elimina archivos.
           </p>
         </div>
         <div className="scan-status">
           <span className="scan-ring amber">
-            <Icon name="sparkles" size={21} />
+            <Icon name="file" size={18} />
           </span>
           <div>
-            <strong>Limpieza protegida</strong>
-            <small>Solo ubicaciones seleccionadas</small>
+            <strong>Solo previsualización</strong>
+            <small>Sin cambios en el sistema</small>
           </div>
         </div>
       </section>
@@ -110,18 +105,9 @@ export function CleanupView({
         </div>
         {items ? (
           items.map((item) => (
-            <label className="cleanup-row" key={item.id}>
-              <input
-                type="checkbox"
-                checked={selection.includes(item.id)}
-                onChange={() => toggleSelection(item.id)}
-                disabled={busy || item.fileCount === 0}
-              />
+            <div className="cleanup-row" key={item.label}>
               <span className="cleanup-icon">
-                <Icon
-                  name={item.id === "recycle-bin" ? "disk" : "sparkles"}
-                  size={16}
-                />
+                <Icon name="file" size={16} />
               </span>
               <span className="cleanup-row-copy">
                 <strong>{item.label}</strong>
@@ -134,8 +120,7 @@ export function CleanupView({
                       language === "en" ? "items" : "elementos"
                     }`}
               </span>
-              <Icon name="arrow" size={16} />
-            </label>
+            </div>
           ))
         ) : (
           <p className="empty-state">

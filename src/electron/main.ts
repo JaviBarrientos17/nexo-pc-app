@@ -1,4 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu } from "electron";
+import { existsSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import { release as getOsRelease } from "node:os";
 import path from "node:path";
@@ -174,24 +175,44 @@ async function checkForUpdates() {
   }
 }
 
-function createWindow() {
-  const iconPath = app.isPackaged
+function getAppIconPath(): string {
+  if (process.platform === "win32") {
+    const icoPath = app.isPackaged
+      ? path.join(process.resourcesPath, "icon.ico")
+      : path.join(__dirname, "../../assets/icon.ico");
+    if (existsSync(icoPath)) {
+      return icoPath;
+    }
+  }
+
+  const pngPath = app.isPackaged
     ? path.join(process.resourcesPath, "icon.png")
     : path.join(__dirname, "../../assets/icon.png");
+  if (existsSync(pngPath)) {
+    return pngPath;
+  }
+
+  return app.isPackaged
+    ? path.join(process.resourcesPath, "icon.png")
+    : path.join(__dirname, "../../assets/icon.png");
+}
+
+function createWindow() {
+  const iconPath = getAppIconPath();
   mainWindow = new BrowserWindow({
     width: 1440,
     height: 920,
     minWidth: 760,
     minHeight: 600,
     icon: iconPath,
-    backgroundColor: "#161618",
+    backgroundColor: "#fafafa",
     title: "Nexo PC",
     ...(process.platform === "win32"
       ? {
           titleBarStyle: "hidden" as const,
           titleBarOverlay: {
-            color: "#f5f5f7",
-            symbolColor: "#5f6066",
+            color: "#fafafa",
+            symbolColor: "#4c4c4c",
             height: 42
           }
         }
@@ -256,8 +277,8 @@ ipcMain.handle("window:isMaximized", () => mainWindow?.isMaximized() ?? false);
 ipcMain.handle("window:set-theme", (_event, theme: "light" | "dark") => {
   if (process.platform !== "win32" || !mainWindow) return;
   mainWindow.setTitleBarOverlay({
-    color: theme === "dark" ? "#27272a" : "#f5f5f7",
-    symbolColor: theme === "dark" ? "#d4d4d8" : "#5f6066",
+    color: theme === "dark" ? "#151515" : "#fafafa",
+    symbolColor: theme === "dark" ? "#c2c2c2" : "#4c4c4c",
     height: 42
   });
 });
