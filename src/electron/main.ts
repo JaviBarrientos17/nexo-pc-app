@@ -287,15 +287,22 @@ ipcMain.handle("system:snapshot", getSystemSnapshot);
 ipcMain.handle("hardware:report", getHardwareReport);
 
 ipcMain.handle("cleanup:preview", (): Promise<CleanupItem[]> => getCleanupPreview());
-ipcMain.handle("cleanup:run", (_event, ids: unknown) => {
-  if (
-    !Array.isArray(ids) ||
-    ids.length === 0 ||
-    ids.some((id) => id !== "user-temp" && id !== "recycle-bin")
-  ) {
-    throw new TypeError("La solicitud de limpieza no es válida.");
+ipcMain.handle("cleanup:run", (_event, payload: unknown) => {
+  if (Array.isArray(payload)) {
+    if (payload.length === 0 || payload.some((item) => typeof item !== "string")) {
+      throw new TypeError("La solicitud de limpieza no es válida.");
+    }
+    return cleanSelectedItems(payload as any);
   }
-  return cleanSelectedItems(ids);
+  if (
+    payload &&
+    typeof payload === "object" &&
+    (("categoryIds" in payload && Array.isArray((payload as any).categoryIds)) ||
+      ("fileIds" in payload && Array.isArray((payload as any).fileIds)))
+  ) {
+    return cleanSelectedItems(payload as any);
+  }
+  throw new TypeError("La solicitud de limpieza no es válida.");
 });
 ipcMain.handle("update:download", () => {
   sendUpdateState({

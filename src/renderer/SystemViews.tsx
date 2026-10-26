@@ -154,6 +154,8 @@ export function SettingsView({
   onThemeChange,
   language,
   onLanguageChange,
+  showPercentageBars,
+  onTogglePercentageBars,
   updateState,
   onCheckUpdates,
   onDownloadUpdate,
@@ -163,6 +165,8 @@ export function SettingsView({
   onThemeChange: (theme: "light" | "dark") => void;
   language: Language;
   onLanguageChange: (language: Language) => void;
+  showPercentageBars?: boolean;
+  onTogglePercentageBars?: (enabled: boolean) => void;
   updateState: UpdateState;
   onCheckUpdates: () => void;
   onDownloadUpdate: () => void;
@@ -265,6 +269,37 @@ export function SettingsView({
                 <i />
               </span>
               <span>Oscuro</span>
+            </button>
+          </div>
+        </article>
+        <article className="surface settings-card">
+          <div className="settings-card-heading">
+            <span className="settings-icon appearance">
+              <Icon name="pulse" size={18} />
+            </span>
+            <div>
+              <strong>Barras de porcentaje</strong>
+              <small>Mostrar barras de color con los porcentajes de uso en las métricas.</small>
+            </div>
+          </div>
+          <div
+            className="appearance-options"
+            role="group"
+            aria-label="Barras de porcentaje"
+          >
+            <button
+              className={`appearance-option${showPercentageBars !== false ? " selected" : ""}`}
+              aria-pressed={showPercentageBars !== false}
+              onClick={() => onTogglePercentageBars?.(true)}
+            >
+              <span>Activadas</span>
+            </button>
+            <button
+              className={`appearance-option${showPercentageBars === false ? " selected" : ""}`}
+              aria-pressed={showPercentageBars === false}
+              onClick={() => onTogglePercentageBars?.(false)}
+            >
+              <span>Desactivadas</span>
             </button>
           </div>
         </article>

@@ -7,7 +7,9 @@ import {
   useState,
 } from "react";
 import type {
+  CleanupCategoryId,
   CleanupItem,
+  CleanupRunOptions,
   CleanupResult,
   HardwareReport,
   SystemSnapshot,
@@ -90,6 +92,15 @@ export function App() {
   const [theme, setTheme] = useState<"light" | "dark">(() =>
     localStorage.getItem("nexo-theme") === "dark" ? "dark" : "light",
   );
+  const [showPercentageBars, setShowPercentageBars] = useState<boolean>(() => {
+    const saved = localStorage.getItem("nexo-percentage-bars");
+    return saved !== null ? saved === "true" : true;
+  });
+
+  const handleTogglePercentageBars = (enabled: boolean) => {
+    setShowPercentageBars(enabled);
+    localStorage.setItem("nexo-percentage-bars", String(enabled));
+  };
   const [dataError, setDataError] = useState("");
   const [update, setUpdate] = useState<UpdateNotice>();
   const [updatePromptOpen, setUpdatePromptOpen] = useState(false);
@@ -97,7 +108,7 @@ export function App() {
     status: "idle",
   });
   const [cleanup, setCleanup] = useState<CleanupItem[]>();
-  const [cleanupSelection, setCleanupSelection] = useState<CleanupItem["id"][]>([]);
+  const [cleanupSelection, setCleanupSelection] = useState<string[]>([]);
   const [cleanupBusy, setCleanupBusy] = useState(false);
   const [cleanupMessage, setCleanupMessage] = useState("");
   const [cleanupError, setCleanupError] = useState("");
@@ -335,15 +346,6 @@ export function App() {
     try {
       const items = await window.nexo.getCleanupPreview();
       setCleanup(items);
-      setCleanupSelection(
-        cleanup === undefined
-          ? items
-              .filter((item) => item.selected && item.fileCount > 0)
-              .map((item) => item.id)
-          : cleanupSelection.filter((id) =>
-              items.some((item) => item.id === id && item.fileCount > 0),
-            ),
-      );
     } catch (error) {
       const message =
         error instanceof Error
@@ -359,13 +361,15 @@ export function App() {
     }
   };
 
-  const cleanSelectedLocations = async (ids: CleanupItem["id"][]) => {
+  const cleanSelectedLocations = async (
+    target: (CleanupCategoryId | string)[] | CleanupRunOptions,
+  ) => {
     setCleanupBusy(true);
     setCleanupError("");
     setCleanupMessage("");
     let results: CleanupResult[];
     try {
-      results = await window.nexo.cleanSelectedItems(ids);
+      results = await window.nexo.cleanSelectedItems(target);
     } catch (error) {
       const message =
         error instanceof Error
@@ -411,11 +415,6 @@ export function App() {
     try {
       const items = await window.nexo.getCleanupPreview();
       setCleanup(items);
-      setCleanupSelection(
-        ids.filter((id) =>
-          items.some((item) => item.id === id && item.fileCount > 0),
-        ),
-      );
     } catch (error) {
       const message =
         error instanceof Error
@@ -456,6 +455,7 @@ export function App() {
     Actualizaciones: { status: updateState, applicationVersion: "Nexo PC" },
     Ajustes: {
       theme,
+      showPercentageBars,
       privacy: "Los datos del sistema se procesan localmente en este equipo.",
     },
   };
@@ -624,6 +624,8 @@ export function App() {
         onThemeChange={setTheme}
         language={language}
         onLanguageChange={changeLanguage}
+        showPercentageBars={showPercentageBars}
+        onTogglePercentageBars={handleTogglePercentageBars}
         updateState={updateState}
         onCheckUpdates={checkForUpdates}
         onDownloadUpdate={downloadUpdate}
@@ -632,14 +634,12 @@ export function App() {
     ) : section === "Limpieza" ? (
       <CleanupView
         items={cleanup}
-        selectedIds={cleanupSelection}
         busy={cleanupBusy}
         message={cleanupMessage}
         error={cleanupError}
         language={language}
         onPreview={() => void refreshCleanupPreview()}
-        onSelectionChange={setCleanupSelection}
-        onClean={(ids) => void cleanSelectedLocations(ids)}
+        onClean={(target) => void cleanSelectedLocations(target)}
       />
     ) : (
       <Dashboard
@@ -650,10 +650,12 @@ export function App() {
         language={language}
         memoryPercent={memoryPercent}
         updateState={updateState}
+        showPercentageBars={showPercentageBars}
         onOpenHardware={(category = "all") => {
           navigateTo("Hardware");
           setHardwareCategory(category);
         }}
+        onOpenCleanup={openCleanup}
       />
     );
 
@@ -692,11 +694,11 @@ export function App() {
       >
         {page}
       </AppShell>
-      {isOpeningHardware && (
+      {(isOpeningHardware || (!hardware && !dataError)) && (
         <div className="hardware-loading-overlay" role="status" aria-live="polite">
           <div className="hardware-loading-card">
             <span className="hardware-loading-spinner" aria-hidden="true" />
-            <span>Cargando datos...</span>
+            <span>Cargando datos…</span>
           </div>
         </div>
       )}

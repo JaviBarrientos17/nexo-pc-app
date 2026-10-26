@@ -1,7 +1,9 @@
 /// <reference types="vite/client" />
 
 import type {
+  CleanupCategoryId,
   CleanupItem,
+  CleanupRunOptions,
   CleanupResult,
   ExportFileRequest,
   ExportFileResult,
@@ -22,7 +24,7 @@ declare global {
       setFanControl(id: string, percent: number): Promise<FanControlInfo[]>;
       restoreFanControls(): Promise<FanControlInfo[]>;
       getCleanupPreview(): Promise<CleanupItem[]>;
-      cleanSelectedItems(ids: CleanupItem["id"][]): Promise<CleanupResult[]>;
+      cleanSelectedItems(target: (CleanupCategoryId | string)[] | CleanupRunOptions): Promise<CleanupResult[]>;
       downloadUpdate(): Promise<void>;
       installUpdate(): Promise<void>;
       checkForUpdates(): Promise<void>;

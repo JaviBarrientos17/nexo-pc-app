@@ -1,25 +1,37 @@
 import { execFile as execFileCallback } from "node:child_process";
-import { lstat, readdir, unlink } from "node:fs/promises";
+import { lstat, readdir, rm, unlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
-import type { CleanupItem, CleanupResult } from "../shared/types";
+import type {
+  CleanupCategoryId,
+  CleanupFileEntry,
+  CleanupItem,
+  CleanupResult,
+  CleanupRunOptions,
+} from "../shared/types";
 
 const execFile = promisify(execFileCallback);
-const TEMP_FILE_AGE_MS = 24 * 60 * 60 * 1000;
+export const TEMP_FILE_AGE_MS = 24 * 60 * 60 * 1000;
 
-interface TempScan {
+interface DetailedTempScan {
   sizeBytes: number;
   fileCount: number;
+  files: CleanupFileEntry[];
 }
 
-async function scanTempFiles(root: string, cutoff: number): Promise<TempScan> {
-  const result: TempScan = { sizeBytes: 0, fileCount: 0 };
+export async function scanTempFilesDetailed(
+  root: string,
+  cutoff: number,
+  maxEntries = 3000,
+): Promise<DetailedTempScan> {
+  const result: DetailedTempScan = { sizeBytes: 0, fileCount: 0, files: [] };
   const directories = [root];
 
   while (directories.length > 0) {
     const directory = directories.pop();
     if (!directory) continue;
+
     let entries;
     try {
       entries = await readdir(directory, { withFileTypes: true });
@@ -31,7 +43,7 @@ async function scanTempFiles(root: string, cutoff: number): Promise<TempScan> {
       ) {
         continue;
       }
-      throw error;
+      continue;
     }
 
     for (const entry of entries) {
@@ -44,9 +56,22 @@ async function scanTempFiles(root: string, cutoff: number): Promise<TempScan> {
 
       try {
         const stats = await lstat(entryPath);
-        if (stats.mtimeMs <= cutoff) {
-          result.fileCount += 1;
-          result.sizeBytes += stats.size;
+        result.fileCount += 1;
+        result.sizeBytes += stats.size;
+
+        if (result.files.length < maxEntries) {
+          const ext = path.extname(entry.name).toUpperCase().replace(/^\./, "");
+          result.files.push({
+            id: entryPath,
+            name: entry.name,
+            path: entryPath,
+            category: "user-temp",
+            sizeBytes: stats.size,
+            modifiedAt: stats.mtime.toISOString(),
+            isOlderThan24h: stats.mtimeMs <= cutoff,
+            itemType: ext || "TMP",
+            isDirectory: false,
+          });
         }
       } catch (error) {
         if (
@@ -56,65 +81,123 @@ async function scanTempFiles(root: string, cutoff: number): Promise<TempScan> {
         ) {
           continue;
         }
-        throw error;
       }
     }
   }
 
+  // Sort collected files by size descending by default
+  result.files.sort((a, b) => b.sizeBytes - a.sizeBytes);
+
   return result;
 }
 
-async function getRecycleBinSize(): Promise<TempScan> {
+interface RawRecycleItem {
+  name: string;
+  path: string;
+  sizeBytes: number;
+  originalPath?: string;
+  deletedAt?: string;
+  itemType?: string;
+}
+
+export async function getRecycleBinDetails(): Promise<DetailedTempScan> {
   const script = [
-    "$ErrorActionPreference = 'Stop'",
+    "$ErrorActionPreference = 'SilentlyContinue'",
     "$shell = New-Object -ComObject Shell.Application",
     "$bin = $shell.Namespace(10)",
-    "if ($null -eq $bin) { throw 'No se pudo consultar la Papelera de reciclaje.' }",
-    "$items = $bin.Items()",
-    "$bytes = [long]0",
-    "foreach ($item in $items) { $bytes += [long]$item.Size }",
-    "[pscustomobject]@{ fileCount = $items.Count; sizeBytes = $bytes } | ConvertTo-Json -Compress",
-  ].join("; ");
-  const { stdout } = await execFile(
-    "powershell.exe",
-    ["-NoProfile", "-NonInteractive", "-STA", "-Command", script],
-    { windowsHide: true, timeout: 15_000, maxBuffer: 1024 * 1024 },
-  );
-  const parsed: unknown = JSON.parse(stdout.trim());
-  if (
-    typeof parsed !== "object" ||
-    parsed === null ||
-    !("fileCount" in parsed) ||
-    !("sizeBytes" in parsed) ||
-    typeof parsed.fileCount !== "number" ||
-    typeof parsed.sizeBytes !== "number"
-  ) {
-    throw new Error("La respuesta de la Papelera de reciclaje no es válida.");
+    "if ($null -eq $bin) { '[]'; exit 0 }",
+    "$items = @()",
+    "foreach ($item in $bin.Items()) {",
+    "  $items += [pscustomobject]@{",
+    "    name = $item.Name",
+    "    path = $item.Path",
+    "    sizeBytes = [long]$item.Size",
+    "    originalPath = $bin.GetDetailsOf($item, 1)",
+    "    deletedAt = $bin.GetDetailsOf($item, 2)",
+    "    itemType = $bin.GetDetailsOf($item, 4)",
+    "  }",
+    "}",
+    "if ($items.Count -eq 0) { '[]' } else { @($items) | ConvertTo-Json -Compress }",
+  ].join("\n");
+
+  try {
+    const { stdout } = await execFile(
+      "powershell.exe",
+      ["-NoProfile", "-NonInteractive", "-STA", "-Command", script],
+      { windowsHide: true, timeout: 15_000, maxBuffer: 4 * 1024 * 1024 },
+    );
+
+    const trimmed = stdout.trim();
+    if (!trimmed) {
+      return { sizeBytes: 0, fileCount: 0, files: [] };
+    }
+
+    const parsed: unknown = JSON.parse(trimmed);
+    const rawList: RawRecycleItem[] = Array.isArray(parsed)
+      ? (parsed as RawRecycleItem[])
+      : parsed && typeof parsed === "object"
+        ? [parsed as RawRecycleItem]
+        : [];
+
+    let totalBytes = 0;
+    const files: CleanupFileEntry[] = rawList.map((item) => {
+      const bytes = Number(item.sizeBytes) || 0;
+      totalBytes += bytes;
+      const cleanDeletedAt = item.deletedAt ? item.deletedAt.replace(/[\u200e\u200f?]/g, "").trim() : undefined;
+      const ext = path.extname(item.name || "").toUpperCase().replace(/^\./, "") || (item.itemType || "BIN");
+
+      return {
+        id: item.path,
+        name: item.name || path.basename(item.path),
+        path: item.path,
+        originalPath: item.originalPath || undefined,
+        category: "recycle-bin" as CleanupCategoryId,
+        sizeBytes: bytes,
+        deletedAt: cleanDeletedAt,
+        isOlderThan24h: true,
+        itemType: ext,
+        isDirectory: false,
+      };
+    });
+
+    files.sort((a, b) => b.sizeBytes - a.sizeBytes);
+
+    return {
+      sizeBytes: totalBytes,
+      fileCount: files.length,
+      files,
+    };
+  } catch (error) {
+    console.warn("Could not query detailed recycle bin items:", error);
+    return { sizeBytes: 0, fileCount: 0, files: [] };
   }
-  return { fileCount: parsed.fileCount, sizeBytes: parsed.sizeBytes };
 }
 
 export async function getCleanupPreview(): Promise<CleanupItem[]> {
   const cutoff = Date.now() - TEMP_FILE_AGE_MS;
   const [temp, recycleBin] = await Promise.all([
-    scanTempFiles(os.tmpdir(), cutoff),
-    getRecycleBinSize(),
+    scanTempFilesDetailed(os.tmpdir(), cutoff),
+    getRecycleBinDetails(),
   ]);
 
   return [
     {
       id: "user-temp",
-      label: "Archivos temporales de usuario (más de 24 h)",
+      label: "Archivos temporales de usuario",
       path: os.tmpdir(),
-      ...temp,
+      sizeBytes: temp.sizeBytes,
+      fileCount: temp.fileCount,
       selected: true,
+      files: temp.files,
     },
     {
       id: "recycle-bin",
       label: "Papelera de reciclaje",
       path: "Papelera de reciclaje",
-      ...recycleBin,
-      selected: false,
+      sizeBytes: recycleBin.sizeBytes,
+      fileCount: recycleBin.fileCount,
+      selected: true,
+      files: recycleBin.files,
     },
   ];
 }
@@ -185,8 +268,8 @@ export async function cleanTempFiles(
   return result;
 }
 
-async function emptyRecycleBin(): Promise<CleanupResult> {
-  const before = await getRecycleBinSize();
+export async function emptyRecycleBin(): Promise<CleanupResult> {
+  const before = await getRecycleBinDetails();
   if (before.fileCount === 0) {
     return {
       id: "recycle-bin",
@@ -197,14 +280,19 @@ async function emptyRecycleBin(): Promise<CleanupResult> {
   }
   const script = [
     "$ErrorActionPreference = 'Stop'",
-    "Clear-RecycleBin -Force -ErrorAction Stop",
+    "Clear-RecycleBin -Force -ErrorAction SilentlyContinue",
     "[pscustomobject]@{ success = $true } | ConvertTo-Json -Compress",
   ].join("; ");
-  await execFile(
-    "powershell.exe",
-    ["-NoProfile", "-NonInteractive", "-STA", "-Command", script],
-    { windowsHide: true, timeout: 60_000, maxBuffer: 1024 * 1024 },
-  );
+  try {
+    await execFile(
+      "powershell.exe",
+      ["-NoProfile", "-NonInteractive", "-STA", "-Command", script],
+      { windowsHide: true, timeout: 60_000, maxBuffer: 1024 * 1024 },
+    );
+  } catch (error) {
+    console.warn("Clear-RecycleBin warning:", error);
+  }
+
   return {
     id: "recycle-bin",
     deletedBytes: before.sizeBytes,
@@ -213,30 +301,134 @@ async function emptyRecycleBin(): Promise<CleanupResult> {
   };
 }
 
-export async function cleanSelectedItems(
-  ids: CleanupItem["id"][],
-): Promise<CleanupResult[]> {
-  const selectedIds = [...new Set(ids)];
-  if (selectedIds.length === 0) {
-    throw new Error("Selecciona al menos una ubicación para limpiar.");
+export async function cleanSpecificFiles(
+  filePaths: string[],
+): Promise<CleanupResult> {
+  const result: CleanupResult = {
+    id: "custom-selection",
+    deletedBytes: 0,
+    deletedFiles: 0,
+    failedFiles: 0,
+  };
+
+  const recycleBinPaths: string[] = [];
+  const normalPaths: string[] = [];
+
+  for (const p of filePaths) {
+    if (p.includes("$Recycle.Bin") || p.includes("$RECYCLE.BIN")) {
+      recycleBinPaths.push(p);
+    } else {
+      normalPaths.push(p);
+    }
   }
-  if (selectedIds.some((id) => id !== "user-temp" && id !== "recycle-bin")) {
-    throw new Error("La solicitud de limpieza contiene una ubicación no válida.");
+
+  // 1. Delete regular files (temporary files)
+  for (const filePath of normalPaths) {
+    try {
+      const stats = await lstat(filePath);
+      await rm(filePath, { recursive: true, force: true });
+      result.deletedFiles += 1;
+      result.deletedBytes += stats.size;
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        "code" in error &&
+        error.code === "ENOENT"
+      ) {
+        // File was already gone, consider cleaned
+        continue;
+      }
+      result.failedFiles += 1;
+    }
+  }
+
+  // 2. Delete specific recycle bin items via PowerShell
+  if (recycleBinPaths.length > 0) {
+    const tempFile = path.join(
+      os.tmpdir(),
+      `nexo-recycle-delete-${Date.now()}-${Math.random().toString(36).substring(2)}.json`,
+    );
+
+    try {
+      await writeFile(tempFile, JSON.stringify(recycleBinPaths), "utf8");
+      const script = [
+        "$ErrorActionPreference = 'SilentlyContinue'",
+        `$paths = Get-Content -LiteralPath '${tempFile.replace(/'/g, "''")}' -Raw | ConvertFrom-Json`,
+        "$deletedCount = 0",
+        "foreach ($p in $paths) {",
+        "  if (Test-Path -LiteralPath $p) {",
+        "    try {",
+        "      Remove-Item -LiteralPath $p -Recurse -Force -ErrorAction Stop",
+        "      $deletedCount++",
+        "    } catch {}",
+        "  }",
+        "}",
+        "[pscustomobject]@{ deleted = $deletedCount } | ConvertTo-Json -Compress",
+      ].join("\n");
+
+      const { stdout } = await execFile(
+        "powershell.exe",
+        ["-NoProfile", "-NonInteractive", "-STA", "-Command", script],
+        { windowsHide: true, timeout: 30_000 },
+      );
+
+      const parsed = JSON.parse(stdout.trim() || '{"deleted": 0}');
+      const deletedCount = Number(parsed.deleted) || recycleBinPaths.length;
+      result.deletedFiles += deletedCount;
+    } catch (error) {
+      console.warn("Failed deleting some recycle bin items:", error);
+      result.failedFiles += recycleBinPaths.length;
+    } finally {
+      await unlink(tempFile).catch(() => {});
+    }
+  }
+
+  return result;
+}
+
+export async function cleanSelectedItems(
+  target: (CleanupCategoryId | string)[] | CleanupRunOptions,
+): Promise<CleanupResult[]> {
+  let categoryIds: CleanupCategoryId[] = [];
+  let fileIds: string[] = [];
+
+  if (Array.isArray(target)) {
+    for (const item of target) {
+      if (item === "user-temp" || item === "recycle-bin" || item === "system-temp") {
+        categoryIds.push(item);
+      } else if (typeof item === "string" && item.length > 0) {
+        fileIds.push(item);
+      }
+    }
+  } else if (target && typeof target === "object") {
+    categoryIds = target.categoryIds ?? [];
+    fileIds = target.fileIds ?? [];
+  }
+
+  if (categoryIds.length === 0 && fileIds.length === 0) {
+    throw new Error("Selecciona al menos una ubicación o archivo para limpiar.");
   }
 
   const results: CleanupResult[] = [];
-  for (const id of selectedIds) {
+
+  // If specific files were selected, execute granular cleanup
+  if (fileIds.length > 0) {
+    results.push(await cleanSpecificFiles(fileIds));
+  }
+
+  // If entire categories were chosen (and no specific file IDs given for that category)
+  for (const cat of categoryIds) {
     try {
-      if (id === "user-temp") {
+      if (cat === "user-temp") {
         results.push(
           await cleanTempFiles(os.tmpdir(), Date.now() - TEMP_FILE_AGE_MS),
         );
-      } else {
+      } else if (cat === "recycle-bin") {
         results.push(await emptyRecycleBin());
       }
     } catch (error) {
       results.push({
-        id,
+        id: cat,
         deletedBytes: 0,
         deletedFiles: 0,
         failedFiles: 0,
@@ -247,5 +439,6 @@ export async function cleanSelectedItems(
       });
     }
   }
+
   return results;
 }

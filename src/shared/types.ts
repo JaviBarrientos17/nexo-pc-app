@@ -91,21 +91,43 @@ export interface HardwareReport {
   collectedAt: string;
 }
 
+export type CleanupCategoryId = "user-temp" | "recycle-bin" | "system-temp";
+
+export interface CleanupFileEntry {
+  id: string;
+  name: string;
+  path: string;
+  category: CleanupCategoryId;
+  sizeBytes: number;
+  modifiedAt?: string;
+  deletedAt?: string;
+  originalPath?: string;
+  isOlderThan24h: boolean;
+  itemType?: string;
+  isDirectory?: boolean;
+}
+
 export interface CleanupItem {
-  id: "user-temp" | "recycle-bin";
+  id: CleanupCategoryId;
   label: string;
   path: string;
   sizeBytes: number;
   fileCount: number;
   selected: boolean;
+  files?: CleanupFileEntry[];
 }
 
 export interface CleanupResult {
-  id: CleanupItem["id"];
+  id: CleanupCategoryId | "custom-selection";
   deletedBytes: number;
   deletedFiles: number;
   failedFiles: number;
   error?: string;
+}
+
+export interface CleanupRunOptions {
+  categoryIds?: CleanupCategoryId[];
+  fileIds?: string[];
 }
 
 export interface UpdateNotice {

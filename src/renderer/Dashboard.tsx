@@ -10,6 +10,7 @@ import { HardwareActionPanel } from "./dashboard/HardwareActionPanel";
 import { HealthPanel } from "./dashboard/HealthPanel";
 import { MetricsGrid } from "./dashboard/MetricsGrid";
 import { PerformancePanel } from "./dashboard/PerformancePanel";
+import { RecommendationsPanel } from "./dashboard/RecommendationsPanel";
 import { Icon } from "./Icon";
 
 export { meter, snapshotFromReport } from "./dashboard/utils";
@@ -22,8 +23,9 @@ export function Dashboard({
   language,
   memoryPercent,
   updateState,
+  showPercentageBars,
   onOpenHardware,
-
+  onOpenCleanup,
 }: {
   cpuHistory: number[];
   snapshot?: SystemSnapshot;
@@ -32,7 +34,9 @@ export function Dashboard({
   language: Language;
   memoryPercent: number;
   updateState: UpdateState;
+  showPercentageBars?: boolean;
   onOpenHardware: (category?: CategoryFilter) => void;
+  onOpenCleanup: () => void;
 }) {
   const cpu = snapshot?.cpu.usagePercent;
   const gpuLoad = hardware?.gpu.utilizationPercent;
@@ -60,6 +64,7 @@ export function Dashboard({
         memoryPercent={memoryPercent}
         gpuLoad={gpuLoad}
         gpuTemp={hardware?.gpu.temperatureC}
+        showPercentageBars={showPercentageBars}
         onOpenHardware={onOpenHardware}
       />
       <section className="dashboard-grid">
@@ -71,6 +76,13 @@ export function Dashboard({
           onOpenHardware={() => onOpenHardware()}
         />
         <HardwareActionPanel onOpenHardware={() => onOpenHardware()} />
+        <RecommendationsPanel
+          snapshot={snapshot}
+          hardware={hardware}
+          updateState={updateState}
+          onOpenHardware={() => onOpenHardware()}
+          onOpenCleanup={onOpenCleanup}
+        />
       </section>
       <footer className="app-footer">
         <span>
