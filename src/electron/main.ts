@@ -1,8 +1,10 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu } from "electron";
+import { existsSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import { release as getOsRelease } from "node:os";
 import path from "node:path";
 import { autoUpdater, NsisUpdater } from "electron-updater";
+import { cleanSelectedItems, getCleanupPreview } from "./cleanup";
 import { getHardwareReport, getSystemSnapshot, isSupportedWindowsVersion } from "./system";
 import type {
   CleanupItem,
@@ -173,10 +175,30 @@ async function checkForUpdates() {
   }
 }
 
-function createWindow() {
-  const iconPath = app.isPackaged
+function getAppIconPath(): string {
+  if (process.platform === "win32") {
+    const icoPath = app.isPackaged
+      ? path.join(process.resourcesPath, "icon.ico")
+      : path.join(__dirname, "../../assets/icon.ico");
+    if (existsSync(icoPath)) {
+      return icoPath;
+    }
+  }
+
+  const pngPath = app.isPackaged
     ? path.join(process.resourcesPath, "icon.png")
     : path.join(__dirname, "../../assets/icon.png");
+  if (existsSync(pngPath)) {
+    return pngPath;
+  }
+
+  return app.isPackaged
+    ? path.join(process.resourcesPath, "icon.png")
+    : path.join(__dirname, "../../assets/icon.png");
+}
+
+function createWindow() {
+  const iconPath = getAppIconPath();
   mainWindow = new BrowserWindow({
     width: 1440,
     height: 920,
@@ -264,10 +286,24 @@ ipcMain.handle("window:set-theme", (_event, theme: "light" | "dark") => {
 ipcMain.handle("system:snapshot", getSystemSnapshot);
 ipcMain.handle("hardware:report", getHardwareReport);
 
-ipcMain.handle("cleanup:preview", (): CleanupItem[] => [
-  { label: "Archivos temporales de usuario", path: "%TEMP%", sizeMb: 0, selected: true },
-  { label: "Papelera de reciclaje", path: "Recycle Bin", sizeMb: 0, selected: false }
-]);
+ipcMain.handle("cleanup:preview", (): Promise<CleanupItem[]> => getCleanupPreview());
+ipcMain.handle("cleanup:run", (_event, payload: unknown) => {
+  if (Array.isArray(payload)) {
+    if (payload.length === 0 || payload.some((item) => typeof item !== "string")) {
+      throw new TypeError("La solicitud de limpieza no es válida.");
+    }
+    return cleanSelectedItems(payload as any);
+  }
+  if (
+    payload &&
+    typeof payload === "object" &&
+    (("categoryIds" in payload && Array.isArray((payload as any).categoryIds)) ||
+      ("fileIds" in payload && Array.isArray((payload as any).fileIds)))
+  ) {
+    return cleanSelectedItems(payload as any);
+  }
+  throw new TypeError("La solicitud de limpieza no es válida.");
+});
 ipcMain.handle("update:download", () => {
   sendUpdateState({
     status: "downloading",

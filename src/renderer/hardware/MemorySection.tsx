@@ -1,4 +1,5 @@
 import type { HardwareSectionProps } from "./HardwareSectionTypes";
+import { Icon } from "../Icon";
 
 export function MemorySection(props: HardwareSectionProps) {
   const {
@@ -13,7 +14,8 @@ export function MemorySection(props: HardwareSectionProps) {
     loadTone,
   } = props;
   return (
-    <>      {(category === "all" || category === "ram") &&
+    <>
+      {(category === "all" || category === "ram") &&
         matchesSearch(
           "RAM Memoria DDR4 DDR5 Corsair Kingston Slots " +
             (report?.memory.modules
@@ -200,7 +202,8 @@ export function MemorySection(props: HardwareSectionProps) {
                         </td>
                       </tr>
                     </tbody>
-                  </table>                  {report?.memory.modules &&
+                  </table>
+                  {report?.memory.modules &&
                     report.memory.modules.length > 0 && (
                       <div className="sub-module-section">
                         <p className="sub-section-title">

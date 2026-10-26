@@ -1,4 +1,5 @@
 import type { HardwareSectionProps } from "./HardwareSectionTypes";
+import { Icon } from "../Icon";
 
 export function CpuSection(props: HardwareSectionProps) {
   const {
@@ -13,7 +14,8 @@ export function CpuSection(props: HardwareSectionProps) {
     loadTone,
   } = props;
   return (
-    <>      {(category === "all" || category === "cpu") &&
+    <>
+      {(category === "all" || category === "cpu") &&
         matchesSearch(
           "CPU Procesador Intel AMD Reloj Frecuencia Temperatura Carga " +
             (report?.cpu.name || ""),
@@ -72,7 +74,8 @@ export function CpuSection(props: HardwareSectionProps) {
                       <th style={{ width: "10%" }}>Nivel</th>
                     </tr>
                   </thead>
-                  <tbody>                    <tr className="group-row">
+                  <tbody>
+                    <tr className="group-row">
                       <td colSpan={5}>
                         <span className="sensor-subcat">
                           FRECUENCIAS Y RELOJES
@@ -113,7 +116,8 @@ export function CpuSection(props: HardwareSectionProps) {
                           />
                         </div>
                       </td>
-                    </tr>                    <tr className="group-row">
+                    </tr>
+                    <tr className="group-row">
                       <td colSpan={5}>
                         <span className="sensor-subcat">TEMPERATURAS</span>
                       </td>
@@ -147,7 +151,8 @@ export function CpuSection(props: HardwareSectionProps) {
                           />
                         </div>
                       </td>
-                    </tr>                    <tr className="group-row">
+                    </tr>
+                    <tr className="group-row">
                       <td colSpan={5}>
                         <span className="sensor-subcat">UTILIZACIÓN</span>
                       </td>

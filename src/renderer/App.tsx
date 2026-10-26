@@ -7,7 +7,10 @@ import {
   useState,
 } from "react";
 import type {
+  CleanupCategoryId,
   CleanupItem,
+  CleanupRunOptions,
+  CleanupResult,
   HardwareReport,
   SystemSnapshot,
   UpdateNotice,
@@ -62,6 +65,15 @@ function csvEscape(value: string) {
   return `"${value.replace(/"/g, '""')}"`;
 }
 
+function isHardwareSection(target: string) {
+  return (
+    target === "Resumen" ||
+    target === "Hardware" ||
+    target === "Salud del sistema" ||
+    target === "Unidades"
+  );
+}
+
 export function App() {
   const [snapshot, setSnapshot] = useState<SystemSnapshot>();
   const [cpuHistory, setCpuHistory] = useState<number[]>([]);
@@ -80,6 +92,15 @@ export function App() {
   const [theme, setTheme] = useState<"light" | "dark">(() =>
     localStorage.getItem("nexo-theme") === "dark" ? "dark" : "light",
   );
+  const [showPercentageBars, setShowPercentageBars] = useState<boolean>(() => {
+    const saved = localStorage.getItem("nexo-percentage-bars");
+    return saved !== null ? saved === "true" : true;
+  });
+
+  const handleTogglePercentageBars = (enabled: boolean) => {
+    setShowPercentageBars(enabled);
+    localStorage.setItem("nexo-percentage-bars", String(enabled));
+  };
   const [dataError, setDataError] = useState("");
   const [update, setUpdate] = useState<UpdateNotice>();
   const [updatePromptOpen, setUpdatePromptOpen] = useState(false);
@@ -87,14 +108,20 @@ export function App() {
     status: "idle",
   });
   const [cleanup, setCleanup] = useState<CleanupItem[]>();
+  const [cleanupSelection, setCleanupSelection] = useState<string[]>([]);
+  const [cleanupBusy, setCleanupBusy] = useState(false);
+  const [cleanupMessage, setCleanupMessage] = useState("");
+  const [cleanupError, setCleanupError] = useState("");
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [optionsFeedback, setOptionsFeedback] = useState("");
   const [isExporting, setIsExporting] = useState(false);
+  const [isOpeningHardware, setIsOpeningHardware] = useState(true);
   const historyRef = useRef(["Resumen"]);
   const historyIndexRef = useRef(0);
   const optionsRef = useRef<HTMLDivElement>(null);
   const appRootRef = useRef<HTMLElement>(null);
   const dataRequestRef = useRef<Promise<HardwareReport | undefined>>(undefined);
+  const hardwareLoadingCountRef = useRef(0);
   const dismissedUpdateVersionRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
@@ -104,9 +131,10 @@ export function App() {
     }
   }, [snapshot]);
 
-  const navigateTo = (target: string) => {
+  const navigateTo = async (target: string) => {
     if (target === "Hardware") setHardwareCategory("all");
     if (target === section) return;
+    if (isHardwareSection(target)) await loadHardwareWithSpinner();
     const nextHistory = historyRef.current.slice(
       0,
       historyIndexRef.current + 1,
@@ -119,10 +147,11 @@ export function App() {
     setSection(target);
   };
 
-  const navigateHistory = (direction: -1 | 1) => {
+  const navigateHistory = async (direction: -1 | 1) => {
     const nextIndex = historyIndexRef.current + direction;
     const target = historyRef.current[nextIndex];
     if (!target) return;
+    if (isHardwareSection(target)) await loadHardwareWithSpinner();
     historyIndexRef.current = nextIndex;
     setHistoryIndex(nextIndex);
     setSection(target);
@@ -159,6 +188,21 @@ export function App() {
     return request;
   }, []);
 
+  const loadHardwareWithSpinner = async () => {
+    hardwareLoadingCountRef.current += 1;
+    setIsOpeningHardware(true);
+    try {
+      const [report] = await Promise.all([
+        loadData(),
+        new Promise<void>((resolve) => window.setTimeout(resolve, 500)),
+      ]);
+      return report;
+    } finally {
+      hardwareLoadingCountRef.current -= 1;
+      setIsOpeningHardware(hardwareLoadingCountRef.current > 0);
+    }
+  };
+
   useEffect(() => {
     let active = true;
     let timer = 0;
@@ -167,18 +211,22 @@ export function App() {
       if (!active || document.visibilityState !== "visible") return;
       timer = window.setTimeout(() => void refresh(), refreshInterval);
     };
-    const refresh = async () => {
+    const refresh = async (showSpinner = false) => {
       if (!active || document.visibilityState !== "visible") return;
-      await loadData();
+      if (showSpinner) {
+        await loadHardwareWithSpinner();
+      } else {
+        await loadData();
+      }
       scheduleRefresh();
     };
     const handleVisibilityChange = () => {
       window.clearTimeout(timer);
-      if (document.visibilityState === "visible") void refresh();
+      if (document.visibilityState === "visible") void refresh(true);
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    void refresh();
+    void refresh(true);
     return () => {
       active = false;
       window.clearTimeout(timer);
@@ -291,9 +339,105 @@ export function App() {
     [snapshot],
   );
 
+  const refreshCleanupPreview = async () => {
+    setCleanupBusy(true);
+    setCleanupError("");
+    setCleanupMessage("");
+    try {
+      const items = await window.nexo.getCleanupPreview();
+      setCleanup(items);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "No se pudo analizar las ubicaciones de limpieza.";
+      setCleanupError(
+        language === "en"
+          ? `Could not analyze cleanup locations: ${message}`
+          : `No se pudieron analizar las ubicaciones de limpieza: ${message}`,
+      );
+    } finally {
+      setCleanupBusy(false);
+    }
+  };
+
+  const cleanSelectedLocations = async (
+    target: (CleanupCategoryId | string)[] | CleanupRunOptions,
+  ) => {
+    setCleanupBusy(true);
+    setCleanupError("");
+    setCleanupMessage("");
+    let results: CleanupResult[];
+    try {
+      results = await window.nexo.cleanSelectedItems(target);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "No se pudo completar la limpieza.";
+      setCleanupError(
+        language === "en"
+          ? `Cleanup failed: ${message}`
+          : `No se pudo completar la limpieza: ${message}`,
+      );
+      setCleanupBusy(false);
+      return;
+    }
+
+    const deletedFiles = results.reduce(
+      (total, result) => total + result.deletedFiles,
+      0,
+    );
+    const deletedBytes = results.reduce(
+      (total, result) => total + result.deletedBytes,
+      0,
+    );
+    const failedFiles = results.reduce(
+      (total, result) => total + result.failedFiles,
+      0,
+    );
+    const operationErrors = results
+      .filter((result) => result.error)
+      .map((result) => result.error);
+    setCleanupMessage(
+      language === "en"
+        ? `Cleanup complete: ${deletedFiles} files, ${Math.round(deletedBytes / 1024 / 1024)} MB removed.${failedFiles ? ` ${failedFiles} files could not be removed because they are in use or protected.` : ""}`
+        : `Limpieza completada: ${deletedFiles} archivos, ${Math.round(deletedBytes / 1024 / 1024)} MB liberados.${failedFiles ? ` No se pudieron eliminar ${failedFiles} archivos porque están en uso o protegidos.` : ""}`,
+    );
+    if (operationErrors.length > 0) {
+      setCleanupError(
+        language === "en"
+          ? `Some locations could not be cleaned: ${operationErrors.join("; ")}`
+          : `No se pudieron limpiar algunas ubicaciones: ${operationErrors.join("; ")}`,
+      );
+    }
+
+    try {
+      const items = await window.nexo.getCleanupPreview();
+      setCleanup(items);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "No se pudo actualizar el análisis.";
+      setCleanupError((previous) =>
+        [
+          previous,
+          language === "en"
+            ? `Cleanup succeeded, but the scan could not be refreshed: ${message}`
+            : `La limpieza terminó, pero no se pudo actualizar el análisis: ${message}`,
+        ]
+          .filter(Boolean)
+          .join(" "),
+      );
+    } finally {
+      setCleanupBusy(false);
+    }
+  };
+
   const openCleanup = async () => {
-    navigateTo("Limpieza");
-    setCleanup(await window.nexo.getCleanupPreview());
+    await navigateTo("Limpieza");
+    await refreshCleanupPreview();
   };
 
   const exportData: Record<string, unknown> = {
@@ -311,6 +455,7 @@ export function App() {
     Actualizaciones: { status: updateState, applicationVersion: "Nexo PC" },
     Ajustes: {
       theme,
+      showPercentageBars,
       privacy: "Los datos del sistema se procesan localmente en este equipo.",
     },
   };
@@ -378,10 +523,9 @@ export function App() {
           `Modo ${nextTheme === "dark" ? "oscuro" : "claro"} activado.`,
         );
       } else if (section === "Limpieza") {
-        setCleanup(await window.nexo.getCleanupPreview());
-        setOptionsFeedback("Previsualización actualizada.");
+        await refreshCleanupPreview();
       } else {
-        const nextHardware = await loadData();
+        const nextHardware = await loadHardwareWithSpinner();
         if (!nextHardware) {
           setOptionsFeedback(
             dataError || "No se pudieron cargar los datos del sistema.",
@@ -456,6 +600,10 @@ export function App() {
     setUpdatePromptOpen(false);
   };
 
+  const openHardware = async () => {
+    await navigateTo("Hardware");
+  };
+
   const page =
     section === "Hardware" ? (
       <HardwareMonitor report={hardware} onRefresh={loadData} initialCategory={hardwareCategory} />
@@ -476,6 +624,8 @@ export function App() {
         onThemeChange={setTheme}
         language={language}
         onLanguageChange={changeLanguage}
+        showPercentageBars={showPercentageBars}
+        onTogglePercentageBars={handleTogglePercentageBars}
         updateState={updateState}
         onCheckUpdates={checkForUpdates}
         onDownloadUpdate={downloadUpdate}
@@ -484,7 +634,12 @@ export function App() {
     ) : section === "Limpieza" ? (
       <CleanupView
         items={cleanup}
-        onPreview={() => window.nexo.getCleanupPreview().then(setCleanup)}
+        busy={cleanupBusy}
+        message={cleanupMessage}
+        error={cleanupError}
+        language={language}
+        onPreview={() => void refreshCleanupPreview()}
+        onClean={(target) => void cleanSelectedLocations(target)}
       />
     ) : (
       <Dashboard
@@ -495,46 +650,58 @@ export function App() {
         language={language}
         memoryPercent={memoryPercent}
         updateState={updateState}
+        showPercentageBars={showPercentageBars}
         onOpenHardware={(category = "all") => {
           navigateTo("Hardware");
           setHardwareCategory(category);
         }}
+        onOpenCleanup={openCleanup}
       />
     );
 
   return (
-    <AppShell
-      rootRef={appRootRef}
-      section={section}
-      sidebarCollapsed={sidebarCollapsed}
-      historyIndex={historyIndex}
-      sectionHistory={sectionHistory}
-      theme={theme}
-      optionsRef={optionsRef}
-      optionsOpen={optionsOpen}
-      optionsFeedback={optionsFeedback}
-      isExporting={isExporting}
-      update={update}
-      updateState={updateState}
-      updatePromptOpen={updatePromptOpen}
-      onNavigateHistory={navigateHistory}
-      onToggleSidebar={() => setSidebarCollapsed((collapsed) => !collapsed)}
-      onThemeChange={() =>
-        setTheme((current) => (current === "light" ? "dark" : "light"))
-      }
-      onNavigate={navigateTo}
-      onOpenCleanup={openCleanup}
-      onToggleOptions={() => {
-        setOptionsFeedback("");
-        setOptionsOpen((open) => !open);
-      }}
-      onExport={(format) => void exportCurrentView(format)}
-      onRunViewAction={() => void runViewAction()}
-      contextualAction={contextualAction}
-      onDismissUpdate={dismissUpdatePrompt}
-      onDownloadUpdate={downloadUpdate}
-    >
-      {page}
-    </AppShell>
+    <>
+      <AppShell
+        rootRef={appRootRef}
+        section={section}
+        sidebarCollapsed={sidebarCollapsed}
+        historyIndex={historyIndex}
+        sectionHistory={sectionHistory}
+        theme={theme}
+        optionsRef={optionsRef}
+        optionsOpen={optionsOpen}
+        optionsFeedback={optionsFeedback}
+        isExporting={isExporting}
+        update={update}
+        updateState={updateState}
+        updatePromptOpen={updatePromptOpen}
+        onNavigateHistory={navigateHistory}
+        onToggleSidebar={() => setSidebarCollapsed((collapsed) => !collapsed)}
+        onThemeChange={() =>
+          setTheme((current) => (current === "light" ? "dark" : "light"))
+        }
+        onNavigate={navigateTo}
+        onOpenCleanup={openCleanup}
+        onToggleOptions={() => {
+          setOptionsFeedback("");
+          setOptionsOpen((open) => !open);
+        }}
+        onExport={(format) => void exportCurrentView(format)}
+        onRunViewAction={() => void runViewAction()}
+        contextualAction={contextualAction}
+        onDismissUpdate={dismissUpdatePrompt}
+        onDownloadUpdate={downloadUpdate}
+      >
+        {page}
+      </AppShell>
+      {(isOpeningHardware || (!hardware && !dataError)) && (
+        <div className="hardware-loading-overlay" role="status" aria-live="polite">
+          <div className="hardware-loading-card">
+            <span className="hardware-loading-spinner" aria-hidden="true" />
+            <span>Cargando datos…</span>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

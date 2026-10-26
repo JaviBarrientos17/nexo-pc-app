@@ -1,4 +1,5 @@
 import type { HardwareSectionProps } from "./HardwareSectionTypes";
+import { Icon } from "../Icon";
 
 export function GpuSection(props: HardwareSectionProps) {
   const {
@@ -13,7 +14,8 @@ export function GpuSection(props: HardwareSectionProps) {
     loadTone,
   } = props;
   return (
-    <>      {(category === "all" || category === "gpu") &&
+    <>
+      {(category === "all" || category === "gpu") &&
         matchesSearch(
           "GPU Gráfica Nvidia Radeon Intel GeForce VRAM " +
             (report?.gpu.name || ""),
@@ -77,7 +79,8 @@ export function GpuSection(props: HardwareSectionProps) {
                       <th style={{ width: "10%" }}>Nivel</th>
                     </tr>
                   </thead>
-                  <tbody>                    {report?.gpu.temperatureC !== undefined && (
+                  <tbody>
+                    {report?.gpu.temperatureC !== undefined && (
                       <>
                         <tr className="group-row">
                           <td colSpan={5}>
@@ -117,7 +120,8 @@ export function GpuSection(props: HardwareSectionProps) {
                           </td>
                         </tr>
                     </>
-                      )}                      <tr className="group-row">
+                      )}
+                      <tr className="group-row">
                         <td colSpan={5}>
                           <span className="sensor-subcat">
                             UTILIZACIÓN & CARGA
@@ -191,7 +195,8 @@ export function GpuSection(props: HardwareSectionProps) {
                             </div>
                           </td>
                         </tr>
-                      )}                      {report?.gpu.memoryTotalMb !== undefined && (
+                      )}
+                      {report?.gpu.memoryTotalMb !== undefined && (
                         <>
                           <tr className="group-row">
                             <td colSpan={5}>
@@ -238,7 +243,8 @@ export function GpuSection(props: HardwareSectionProps) {
                             </td>
                           </tr>
                         </>
-                      )}                      {(report?.gpu.powerDrawWatts !== undefined ||
+                      )}
+                      {(report?.gpu.powerDrawWatts !== undefined ||
                         report?.gpu.fanSpeedPercent !== undefined) && (
                         <>
                           <tr className="group-row">

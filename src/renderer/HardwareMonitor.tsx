@@ -186,7 +186,7 @@ export function HardwareMonitor({ report, onRefresh, initialCategory = "all" }: 
         <div>
           <p className="eyebrow">SENSORES DEL SISTEMA</p>
           <h1>
-            Hardware y sensores<span className="title-dot">.</span>
+            Hardware y sensores
           </h1>
           <p className="hero-copy">
             Telemetría avanzada y sensores en tiempo real: frecuencias,

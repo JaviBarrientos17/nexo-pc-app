@@ -1,7 +1,7 @@
 import type { ReactNode, RefObject } from "react";
 import type { UpdateNotice, UpdateState } from "../shared/types";
 import { Icon, type IconName } from "./Icon";
-import appMark from "../../assets/icon.svg";
+import appMark from "../../assets/icon.png";
 
 const systemNav: Array<{ label: string; icon: IconName }> = [
   { label: "Resumen", icon: "grid" },
@@ -118,6 +118,17 @@ export function AppShell({
           <span className="titlebar-separator">/</span>
           <strong>{section}</strong>
         </div>
+        {updateState.status === "available" && (
+          <button
+            className="titlebar-update-button"
+            onClick={() => onNavigate("Actualizaciones")}
+            aria-label="Nueva actualización disponible. Abrir Actualizaciones"
+            title="Nueva actualización disponible"
+          >
+            <Icon name="download" size={14} />
+            <span>Nueva actualización</span>
+          </button>
+        )}
         <button
           className="theme-switch"
           role="switch"
@@ -164,7 +175,7 @@ export function AppShell({
                 title={item.label}
               >
                 <span className={`nav-icon-badge nav-icon-${item.icon}`}>
-                  <Icon name={item.icon} size={15} />
+                  <Icon name={item.icon} size={16} />
                 </span>
                 <span>{item.label}</span>
               </button>
@@ -188,7 +199,7 @@ export function AppShell({
                 title={item.label}
               >
                 <span className={`nav-icon-badge nav-icon-${item.icon}`}>
-                  <Icon name={item.icon} size={15} />
+                  <Icon name={item.icon} size={16} />
                 </span>
                 <span>{item.label}</span>
                 {item.label === "Actualizaciones" && update && !update.downloaded && <i className="nav-dot" />}
