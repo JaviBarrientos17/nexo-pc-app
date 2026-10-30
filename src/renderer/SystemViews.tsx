@@ -4,7 +4,7 @@ import type {
   SystemSnapshot,
   UpdateState,
 } from "../shared/types";
-import type { Language } from "./localization";
+import { type Language, SUPPORTED_LANGUAGES } from "./localization";
 import { Icon } from "./Icon";
 import appMark from "../../assets/icon.png";
 
@@ -64,8 +64,7 @@ export function UpdatesView({
       : state.status === "downloaded"
         ? { label: "Reiniciar e instalar", onClick: onInstall }
         : { label: "Buscar actualizaciones", onClick: onCheck };
-  const isBusy =
-    state.status === "checking" || state.status === "downloading";
+  const isBusy = state.status === "checking" || state.status === "downloading";
   const isPositive =
     state.status === "up-to-date" || state.status === "downloaded";
   const isProblem = state.status === "error" || state.status === "unsupported";
@@ -200,9 +199,7 @@ export function SettingsView({
       <section className="hero system-view-hero">
         <div>
           <p className="eyebrow">PREFERENCIAS</p>
-          <h1>
-            Ajustes
-          </h1>
+          <h1>Ajustes</h1>
           <p className="hero-copy">
             Personaliza la apariencia y consulta cómo se gestionan tus datos.
           </p>
@@ -225,11 +222,14 @@ export function SettingsView({
             aria-label="Idioma de la aplicación"
             value={language}
             onChange={(event) =>
-              onLanguageChange(event.target.value === "en" ? "en" : "es")
+              onLanguageChange(event.target.value as Language)
             }
           >
-            <option value="es">Español</option>
-            <option value="en">English</option>
+            {SUPPORTED_LANGUAGES.map((lang) => (
+              <option key={lang.code} value={lang.code}>
+                {lang.label}
+              </option>
+            ))}
           </select>
         </article>
       </section>
@@ -279,7 +279,10 @@ export function SettingsView({
             </span>
             <div>
               <strong>Barras de porcentaje</strong>
-              <small>Mostrar barras de color con los porcentajes de uso en las métricas.</small>
+              <small>
+                Mostrar barras de color con los porcentajes de uso en las
+                métricas.
+              </small>
             </div>
           </div>
           <div
@@ -480,9 +483,7 @@ export function SystemHealthView({
       <section className="hero system-view-hero">
         <div>
           <p className="eyebrow">DIAGNÓSTICO</p>
-          <h1>
-            Salud del sistema
-          </h1>
+          <h1>Salud del sistema</h1>
           <p className="hero-copy">
             Un resumen de las métricas disponibles para ayudarte a detectar
             posibles problemas.
@@ -689,9 +690,7 @@ export function DrivesView({ report }: { report?: HardwareReport }) {
       <section className="hero system-view-hero">
         <div>
           <p className="eyebrow">ALMACENAMIENTO</p>
-          <h1>
-            Unidades
-          </h1>
+          <h1>Unidades</h1>
           <p className="hero-copy">
             Consulta tus discos, volúmenes y el espacio disponible en este
             equipo.

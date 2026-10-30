@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   CleanupCategoryId,
   CleanupFileEntry,
@@ -6,6 +6,7 @@ import type {
   CleanupRunOptions,
 } from "../shared/types";
 import { Icon } from "./Icon";
+import "./cleanup.css";
 
 export function formatBytes(bytes: number): string {
   if (bytes <= 0) return "0 B";
@@ -20,22 +21,214 @@ export function formatBytes(bytes: number): string {
   return `${size.toFixed(size < 10 ? 1 : 0)} ${units[unit]}`;
 }
 
-function formatDate(isoOrDateString?: string): string {
-  if (!isoOrDateString) return "—";
-  try {
-    const d = new Date(isoOrDateString);
-    if (Number.isNaN(d.getTime())) return isoOrDateString;
-    return d.toLocaleDateString(undefined, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return isoOrDateString;
-  }
+function formatDate(value: string | undefined, locale: string): string {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleString(locale, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
+
+/* ───────────── Textos ───────────── */
+
+const TEXT = {
+  es: {
+    title: "Limpieza",
+    stripTitle: "Archivos detectados",
+    selCount: (n: number, loc: string) =>
+      `${n.toLocaleString(loc)} seleccionados`,
+    armed: "Selección activa",
+    idle: "Sin selección",
+    selectToClean: "Selecciona archivos",
+    irreversible: "Acción irreversible",
+    subtitle:
+      "Revisa qué ocupa espacio y elige qué eliminar. No se borra nada hasta que lo confirmes.",
+    analyze: "Analizar",
+    analyzing: "Analizando…",
+    detected: "detectado para limpiar",
+    temp: "Archivos temporales",
+    bin: "Papelera de reciclaje",
+    all: "Todos",
+    tempTab: "Temporales",
+    binTab: "Papelera",
+    search: "Buscar por nombre, tipo o ruta",
+    clearSearch: "Borrar búsqueda",
+    older: "Más de 24 h",
+    selectSafe: "Seleccionar seguros",
+    selectAll: "Todo",
+    selectNone: "Ninguno",
+    colType: "Tipo",
+    colName: "Nombre y ruta",
+    colCat: "Categoría",
+    colAge: "Antigüedad",
+    colSize: "Tamaño",
+    recent: "Reciente",
+    origin: "Origen",
+    selectVisible: "Seleccionar o deseleccionar los visibles",
+    selectRow: (n: string) => `Seleccionar ${n}`,
+    emptyIdle:
+      "Pulsa «Analizar» para buscar archivos temporales y revisar la papelera.",
+    scanning: "Buscando archivos temporales y revisando la papelera…",
+    noMatches: "Ningún archivo coincide con los filtros.",
+    resetFilters: "Quitar filtros",
+    perPage: "Por página",
+    prev: "Anterior",
+    next: "Siguiente",
+    page: (p: number, t: number) => `Página ${p} de ${t}`,
+    range: (a: number, b: number, t: number, loc: string) =>
+      t === 0
+        ? "0 resultados"
+        : `${a.toLocaleString(loc)}–${b.toLocaleString(loc)} de ${t.toLocaleString(loc)}`,
+    files: (n: number, loc: string) =>
+      n === 1 ? "1 archivo" : `${n.toLocaleString(loc)} archivos`,
+    itemsOf: (n: number, t: number, loc: string) =>
+      `${n.toLocaleString(loc)} de ${t.toLocaleString(loc)} archivos seleccionados`,
+    clean: (size: string) => `Limpiar ${size}`,
+    cleaning: "Eliminando…",
+    footnote:
+      "Los archivos en uso por Windows o por otras aplicaciones se omiten sin interrumpir nada. Lo que elimines aquí no se puede recuperar.",
+    modalTitle: (n: string) => `¿Eliminar ${n}?`,
+    modalFree: (size: string) =>
+      `Vas a liberar ${size}. Esta acción es permanente y no se puede deshacer.`,
+    modalBinNote: "Se vacía definitivamente de la papelera",
+    modalTempNote: "Se eliminan del disco, no pasan por la papelera",
+    largest: "Los más grandes",
+    andMore: (n: number, loc: string) => `y ${n.toLocaleString(loc)} más`,
+    recentWarn: (n: number, loc: string) =>
+      `Incluye ${n.toLocaleString(loc)} ${n === 1 ? "archivo modificado" : "archivos modificados"} en las últimas 24 h que podrían estar en uso.`,
+    cancel: "Cancelar",
+    confirm: "Eliminar definitivamente",
+  },
+  en: {
+    title: "Cleanup",
+    eyebrow: "Maintenance // Storage",
+    stripTitle: "Detected files",
+    selCount: (n: number, loc: string) => `${n.toLocaleString(loc)} selected`,
+    armed: "Selection active",
+    idle: "Nothing selected",
+    selectToClean: "Select files",
+    irreversible: "Irreversible action",
+    subtitle:
+      "See what is taking up space and choose what to delete. Nothing is removed until you confirm.",
+    analyze: "Scan",
+    analyzing: "Scanning…",
+    detected: "found to clean",
+    temp: "Temporary files",
+    bin: "Recycle Bin",
+    all: "All",
+    tempTab: "Temporary",
+    binTab: "Recycle Bin",
+    search: "Search by name, type or path",
+    clearSearch: "Clear search",
+    older: "Older than 24 h",
+    selectSafe: "Select safe ones",
+    selectAll: "All",
+    selectNone: "None",
+    colType: "Type",
+    colName: "Name and path",
+    colCat: "Category",
+    colAge: "Age",
+    colSize: "Size",
+    recent: "Recent",
+    origin: "From",
+    selectVisible: "Select or deselect visible files",
+    selectRow: (n: string) => `Select ${n}`,
+    emptyIdle:
+      "Press “Scan” to look for temporary files and check the Recycle Bin.",
+    scanning: "Looking for temporary files and checking the Recycle Bin…",
+    noMatches: "No files match the current filters.",
+    resetFilters: "Clear filters",
+    perPage: "Per page",
+    prev: "Previous",
+    next: "Next",
+    page: (p: number, t: number) => `Page ${p} of ${t}`,
+    range: (a: number, b: number, t: number, loc: string) =>
+      t === 0
+        ? "0 results"
+        : `${a.toLocaleString(loc)}–${b.toLocaleString(loc)} of ${t.toLocaleString(loc)}`,
+    files: (n: number, loc: string) =>
+      n === 1 ? "1 file" : `${n.toLocaleString(loc)} files`,
+    itemsOf: (n: number, t: number, loc: string) =>
+      `${n.toLocaleString(loc)} of ${t.toLocaleString(loc)} files selected`,
+    clean: (size: string) => `Clean ${size}`,
+    cleaning: "Deleting…",
+    footnote:
+      "Files in use by Windows or other apps are skipped without interrupting anything. What you delete here cannot be recovered.",
+    modalTitle: (n: string) => `Delete ${n}?`,
+    modalFree: (size: string) =>
+      `You will free ${size}. This is permanent and cannot be undone.`,
+    modalBinNote: "Permanently emptied from the Recycle Bin",
+    modalTempNote: "Deleted from disk, not sent to the Recycle Bin",
+    largest: "Largest files",
+    andMore: (n: number, loc: string) => `and ${n.toLocaleString(loc)} more`,
+    recentWarn: (n: number, loc: string) =>
+      `Includes ${n.toLocaleString(loc)} ${n === 1 ? "file" : "files"} modified in the last 24 h that may be in use.`,
+    cancel: "Cancel",
+    confirm: "Delete permanently",
+  },
+} as const;
+
+/* ───────────── Iconos locales ───────────── */
+
+function SearchIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <circle cx="7" cy="7" r="4.5" />
+      <path d="M10.5 10.5L14 14" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" />
+    </svg>
+  );
+}
+
+function SortIcon() {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M2 3.5L5 6.5L8 3.5" />
+    </svg>
+  );
+}
+
+/* ───────────── Componente ───────────── */
 
 export interface CleanupViewProps {
   items?: CleanupItem[];
@@ -49,6 +242,7 @@ export interface CleanupViewProps {
 
 type SortField = "size" | "date" | "name";
 type SortDirection = "asc" | "desc";
+type CategoryFilter = "all" | CleanupCategoryId;
 
 export function CleanupView({
   items,
@@ -59,111 +253,100 @@ export function CleanupView({
   onPreview,
   onClean,
 }: CleanupViewProps) {
-  const [selectedFileIds, setSelectedFileIds] = useState<Set<string>>(new Set());
+  const t = TEXT[language];
+  const locale = language === "en" ? "en-US" : "es-ES";
+
+  const [selectedFileIds, setSelectedFileIds] = useState<Set<string>>(
+    new Set(),
+  );
   const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState<"all" | CleanupCategoryId>("all");
-  const [ageFilter, setAgeFilter] = useState<"all" | "older24h">("all");
+  const [activeCategory, setActiveCategory] = useState<CategoryFilter>("all");
+  const [onlyOlder, setOnlyOlder] = useState(false);
   const [sortField, setSortField] = useState<SortField>("size");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
-  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const cancelRef = useRef<HTMLButtonElement>(null);
 
-  // Extract all files from items
   const allFiles: CleanupFileEntry[] = useMemo(() => {
     if (!items) return [];
     const list: CleanupFileEntry[] = [];
     for (const item of items) {
-      if (item.files) {
-        list.push(...item.files);
-      }
+      if (item.files) list.push(...item.files);
     }
     return list;
   }, [items]);
 
-  // Default selection initialization on items change
+  // Nunca se preselecciona nada: el usuario elige de forma explícita.
+  // Con cada análisis nuevo solo se descartan los ids que ya no existen.
   useEffect(() => {
-    if (!items || items.length === 0) return;
-
     setSelectedFileIds((prev) => {
-      // If user had existing selections, preserve those that still exist
+      if (prev.size === 0) return prev;
+      const available = new Set(allFiles.map((f) => f.id));
       const next = new Set<string>();
-      const existingAvailable = new Set(allFiles.map((f) => f.id));
-
-      if (prev.size > 0) {
-        for (const id of prev) {
-          if (existingAvailable.has(id)) {
-            next.add(id);
-          }
-        }
-      } else {
-        // First load or fresh scan: preselect safe files (>24h temp files and all recycle bin items)
-        for (const file of allFiles) {
-          if (file.category === "recycle-bin" || file.isOlderThan24h) {
-            next.add(file.id);
-          }
-        }
-      }
-      return next;
+      for (const id of prev) if (available.has(id)) next.add(id);
+      return next.size === prev.size ? prev : next;
     });
-  }, [items, allFiles]);
+  }, [allFiles]);
 
-  // Overall metric counts
-  const userTempItem = useMemo(() => items?.find((i) => i.id === "user-temp"), [items]);
-  const recycleBinItem = useMemo(() => items?.find((i) => i.id === "recycle-bin"), [items]);
+  /* Contadores globales (según los archivos realmente listados) */
+  const totals = useMemo(() => {
+    const acc = {
+      temp: { bytes: 0, count: 0 },
+      bin: { bytes: 0, count: 0 },
+    };
+    for (const f of allFiles) {
+      const slot = f.category === "recycle-bin" ? acc.bin : acc.temp;
+      slot.bytes += f.sizeBytes;
+      slot.count += 1;
+    }
+    return acc;
+  }, [allFiles]);
+  const totalBytes = totals.temp.bytes + totals.bin.bytes;
 
-  const totalBytes = useMemo(() => (items ?? []).reduce((acc, i) => acc + i.sizeBytes, 0), [items]);
-  const totalFilesCount = useMemo(() => (items ?? []).reduce((acc, i) => acc + i.fileCount, 0), [items]);
+  /* Estadísticas de la selección en una sola pasada */
+  const selection = useMemo(() => {
+    const s = {
+      list: [] as CleanupFileEntry[],
+      bytes: 0,
+      tempCount: 0,
+      tempBytes: 0,
+      binCount: 0,
+      binBytes: 0,
+      recentCount: 0,
+    };
+    for (const f of allFiles) {
+      if (!selectedFileIds.has(f.id)) continue;
+      s.list.push(f);
+      s.bytes += f.sizeBytes;
+      if (f.category === "recycle-bin") {
+        s.binCount += 1;
+        s.binBytes += f.sizeBytes;
+      } else {
+        s.tempCount += 1;
+        s.tempBytes += f.sizeBytes;
+        if (!f.isOlderThan24h) s.recentCount += 1;
+      }
+    }
+    return s;
+  }, [allFiles, selectedFileIds]);
 
-  // Selection metrics
-  const selectedFilesList = useMemo(
-    () => allFiles.filter((f) => selectedFileIds.has(f.id)),
-    [allFiles, selectedFileIds],
-  );
+  const largestSelected = useMemo(() => {
+    if (!confirmOpen) return [];
+    return [...selection.list]
+      .sort((a, b) => b.sizeBytes - a.sizeBytes)
+      .slice(0, 4);
+  }, [confirmOpen, selection.list]);
 
-  const selectedBytes = useMemo(
-    () => selectedFilesList.reduce((acc, f) => acc + f.sizeBytes, 0),
-    [selectedFilesList],
-  );
-
-  const selectedTempCount = useMemo(
-    () => selectedFilesList.filter((f) => f.category === "user-temp").length,
-    [selectedFilesList],
-  );
-  const selectedTempBytes = useMemo(
-    () =>
-      selectedFilesList
-        .filter((f) => f.category === "user-temp")
-        .reduce((acc, f) => acc + f.sizeBytes, 0),
-    [selectedFilesList],
-  );
-
-  const selectedBinCount = useMemo(
-    () => selectedFilesList.filter((f) => f.category === "recycle-bin").length,
-    [selectedFilesList],
-  );
-  const selectedBinBytes = useMemo(
-    () =>
-      selectedFilesList
-        .filter((f) => f.category === "recycle-bin")
-        .reduce((acc, f) => acc + f.sizeBytes, 0),
-    [selectedFilesList],
-  );
-
-  // Filtered & sorted files list
+  /* Filtrado y orden */
   const filteredFiles = useMemo(() => {
     let result = allFiles;
-
-    if (activeCategory !== "all") {
+    if (activeCategory !== "all")
       result = result.filter((f) => f.category === activeCategory);
-    }
-
-    if (ageFilter === "older24h") {
-      result = result.filter((f) => f.isOlderThan24h);
-    }
-
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
+    if (onlyOlder) result = result.filter((f) => f.isOlderThan24h);
+    const q = search.trim().toLowerCase();
+    if (q) {
       result = result.filter(
         (f) =>
           f.name.toLowerCase().includes(q) ||
@@ -172,66 +355,52 @@ export function CleanupView({
           (f.itemType && f.itemType.toLowerCase().includes(q)),
       );
     }
-
     return [...result].sort((a, b) => {
       let cmp = 0;
-      if (sortField === "size") {
-        cmp = a.sizeBytes - b.sizeBytes;
-      } else if (sortField === "name") {
-        cmp = a.name.localeCompare(b.name);
-      } else if (sortField === "date") {
-        const da = a.deletedAt || a.modifiedAt || "";
-        const db = b.deletedAt || b.modifiedAt || "";
-        cmp = da.localeCompare(db);
-      }
+      if (sortField === "size") cmp = a.sizeBytes - b.sizeBytes;
+      else if (sortField === "name") cmp = a.name.localeCompare(b.name);
+      else
+        cmp = (a.deletedAt || a.modifiedAt || "").localeCompare(
+          b.deletedAt || b.modifiedAt || "",
+        );
       return sortDirection === "desc" ? -cmp : cmp;
     });
-  }, [allFiles, activeCategory, ageFilter, search, sortField, sortDirection]);
+  }, [allFiles, activeCategory, onlyOlder, search, sortField, sortDirection]);
 
-  // Pagination
   const totalPages = Math.max(1, Math.ceil(filteredFiles.length / pageSize));
-  const validCurrentPage = Math.min(currentPage, totalPages);
+  const page = Math.min(currentPage, totalPages);
+  const pageFiles = useMemo(
+    () => filteredFiles.slice((page - 1) * pageSize, page * pageSize),
+    [filteredFiles, page, pageSize],
+  );
 
-  const paginatedFiles = useMemo(() => {
-    const start = (validCurrentPage - 1) * pageSize;
-    return filteredFiles.slice(start, start + pageSize);
-  }, [filteredFiles, validCurrentPage, pageSize]);
-
-  // Selection actions
-  const toggleFile = (id: string) => {
+  /* Selección */
+  const toggleFile = (id: string) =>
     setSelectedFileIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
-  };
 
-  const isAllFilteredSelected =
+  const allFilteredSelected =
     filteredFiles.length > 0 &&
     filteredFiles.every((f) => selectedFileIds.has(f.id));
 
-  const toggleSelectAllFiltered = () => {
+  const toggleFiltered = () =>
     setSelectedFileIds((prev) => {
       const next = new Set(prev);
-      if (isAllFilteredSelected) {
-        for (const f of filteredFiles) next.delete(f.id);
-      } else {
-        for (const f of filteredFiles) next.add(f.id);
+      for (const f of filteredFiles) {
+        if (allFilteredSelected) next.delete(f.id);
+        else next.add(f.id);
       }
       return next;
     });
-  };
 
-  const selectAll = () => {
+  const selectAll = () =>
     setSelectedFileIds(new Set(allFiles.map((f) => f.id)));
-  };
-
-  const deselectAll = () => {
-    setSelectedFileIds(new Set());
-  };
-
-  const selectOlderThan24h = () => {
+  const selectNone = () => setSelectedFileIds(new Set());
+  const selectSafe = () =>
     setSelectedFileIds(
       new Set(
         allFiles
@@ -239,104 +408,178 @@ export function CleanupView({
           .map((f) => f.id),
       ),
     );
-  };
-
-  const handleExecuteClean = () => {
-    if (selectedFileIds.size === 0) return;
-    setConfirmModalOpen(false);
-
-    // If all items in recycle bin are selected and all temp files selected, pass categoryIds
-    const selectedList = Array.from(selectedFileIds);
-    onClean({ fileIds: selectedList });
-  };
 
   const toggleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
-    } else {
+    if (sortField === field)
+      setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
+    else {
       setSortField(field);
       setSortDirection("desc");
     }
   };
 
-  return (
-    <>
-      <section className="hero hw-hero cleanup-hero">
-        <div>
-          <p className="eyebrow">MANTENIMIENTO INDUSTRIAL // ALMACENAMIENTO</p>
-          <h1>Limpieza y Papelera de Reciclaje</h1>
-          <p className="hero-copy">
-            Inspección granular de archivos temporales y vaciado selectivo de la papelera.
-            Elige con precisión qué archivos purgar de forma permanente.
-          </p>
-        </div>
+  const resetFilters = () => {
+    setSearch("");
+    setOnlyOlder(false);
+    setActiveCategory("all");
+  };
 
-        <div className="hw-quick-chips">
-          <div className="hw-chip">
-            <span className="hw-chip-label">TEMPORALES</span>
-            <strong>{formatBytes(userTempItem?.sizeBytes ?? 0)}</strong>
-            <small>{userTempItem?.fileCount ?? 0} {language === "en" ? "files" : "archivos"}</small>
+  const goCategory = (cat: CategoryFilter) => {
+    setActiveCategory(cat);
+    setCurrentPage(1);
+  };
+
+  /* Confirmación */
+  const handleExecuteClean = () => {
+    if (selectedFileIds.size === 0) return;
+    setConfirmOpen(false);
+    onClean({ fileIds: Array.from(selectedFileIds) });
+  };
+
+  useEffect(() => {
+    if (!confirmOpen) return;
+    cancelRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setConfirmOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [confirmOpen]);
+
+  const sortProps = (field: SortField) => ({
+    "aria-sort":
+      sortField === field
+        ? sortDirection === "asc"
+          ? "ascending"
+          : "descending"
+        : ("none" as const),
+  });
+
+  const sortButton = (field: SortField, label: string) => (
+    <button
+      type="button"
+      className="cl-th-btn"
+      data-dir={sortField === field ? sortDirection : undefined}
+      onClick={() => toggleSort(field)}
+    >
+      {label}
+      {sortField === field && <SortIcon />}
+    </button>
+  );
+
+  const hasData = allFiles.length > 0;
+  const barEmpty = totalBytes === 0;
+  const hasFilters = search !== "" || onlyOlder || activeCategory !== "all";
+  const rangeStart = filteredFiles.length === 0 ? 0 : (page - 1) * pageSize + 1;
+  const rangeEnd = Math.min(page * pageSize, filteredFiles.length);
+
+  return (
+    <div className="cl-root">
+      {/* Cabecera */}
+      <header className="cl-head">
+        <div>
+          <p className="cl-eyebrow">{t.eyebrow}</p>
+          <h1>{t.title}</h1>
+          <p>{t.subtitle}</p>
+        </div>
+        <button
+          type="button"
+          className="cl-btn"
+          onClick={onPreview}
+          disabled={busy}
+        >
+          <Icon name="refresh" size={14} />
+          {busy ? t.analyzing : t.analyze}
+        </button>
+      </header>
+
+      {/* Resumen de espacio */}
+      <section className="cl-overview" aria-label={t.detected}>
+        <div className="cl-total">
+          <strong className="cl-num">{formatBytes(totalBytes)}</strong>
+          <span>{t.detected}</span>
+        </div>
+        <div className="cl-compose">
+          <div
+            className={`cl-bar ${barEmpty ? "empty" : ""}`}
+            aria-hidden="true"
+          >
+            {barEmpty ? (
+              <i />
+            ) : (
+              <>
+                {totals.temp.bytes > 0 && (
+                  <i className="temp" style={{ flexGrow: totals.temp.bytes }} />
+                )}
+                {totals.bin.bytes > 0 && (
+                  <i className="bin" style={{ flexGrow: totals.bin.bytes }} />
+                )}
+              </>
+            )}
           </div>
-          <div className="hw-chip">
-            <span className="hw-chip-label">PAPELERA</span>
-            <strong>{formatBytes(recycleBinItem?.sizeBytes ?? 0)}</strong>
-            <small>{recycleBinItem?.fileCount ?? 0} {language === "en" ? "items" : "elementos"}</small>
-          </div>
-          <div className="hw-chip">
-            <span className="hw-chip-label">TOTAL DETECTADO</span>
-            <strong>{formatBytes(totalBytes)}</strong>
-            <small>{totalFilesCount} {language === "en" ? "items total" : "elementos en total"}</small>
-          </div>
-          <div className={`hw-chip cleanup-chip-selected ${selectedFileIds.size > 0 ? "active" : ""}`}>
-            <span className="hw-chip-label">SELECCIONADO</span>
-            <strong className="mono">{formatBytes(selectedBytes)}</strong>
-            <small>{selectedFileIds.size} {language === "en" ? "files to delete" : "archivos a purgar"}</small>
+          <div className="cl-ruler" aria-hidden="true" />
+          <div className="cl-legend">
+            <div>
+              <span className="cl-dot temp" />
+              <span>{t.temp}</span>
+              <b className="cl-num">{formatBytes(totals.temp.bytes)}</b>
+              <small>{t.files(totals.temp.count, locale)}</small>
+            </div>
+            <div>
+              <span className="cl-dot bin" />
+              <span>{t.bin}</span>
+              <b className="cl-num">{formatBytes(totals.bin.bytes)}</b>
+              <small>{t.files(totals.bin.count, locale)}</small>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Industrial Controls Toolbar */}
-      <div className="hw-controls-bar cleanup-controls-bar">
-        <div className="hw-filter-tabs">
+      {/* Herramientas */}
+      <div className="cl-toolbar">
+        <div className="cl-tabs" role="group" aria-label={t.colCat}>
           <button
-            className={`filter-tab ${activeCategory === "all" ? "active" : ""}`}
-            onClick={() => {
-              setActiveCategory("all");
-              setCurrentPage(1);
-            }}
+            type="button"
+            className="cl-tab"
+            aria-pressed={activeCategory === "all"}
+            onClick={() => goCategory("all")}
           >
-            Todos ({allFiles.length})
+            {t.all}
+            <small className="cl-num">
+              {allFiles.length.toLocaleString(locale)}
+            </small>
           </button>
           <button
-            className={`filter-tab ${activeCategory === "user-temp" ? "active" : ""}`}
-            onClick={() => {
-              setActiveCategory("user-temp");
-              setCurrentPage(1);
-            }}
+            type="button"
+            className="cl-tab"
+            aria-pressed={activeCategory === "user-temp"}
+            onClick={() => goCategory("user-temp")}
           >
-            Temporales ({userTempItem?.fileCount ?? 0})
+            {t.tempTab}
+            <small className="cl-num">
+              {totals.temp.count.toLocaleString(locale)}
+            </small>
           </button>
           <button
-            className={`filter-tab ${activeCategory === "recycle-bin" ? "active" : ""}`}
-            onClick={() => {
-              setActiveCategory("recycle-bin");
-              setCurrentPage(1);
-            }}
+            type="button"
+            className="cl-tab"
+            aria-pressed={activeCategory === "recycle-bin"}
+            onClick={() => goCategory("recycle-bin")}
           >
-            Papelera ({recycleBinItem?.fileCount ?? 0})
+            {t.binTab}
+            <small className="cl-num">
+              {totals.bin.count.toLocaleString(locale)}
+            </small>
           </button>
         </div>
 
-        <div className="hw-actions-right">
-          <div className="hw-search-box">
-            <Icon name="sparkles" size={14} />
+        <div className="cl-tools">
+          <label className="cl-search">
+            <SearchIcon />
             <input
               type="text"
-              placeholder={
-                language === "en"
-                  ? "Search by file, ext, or path..."
-                  : "Buscar por archivo, ext o ruta..."
-              }
+              placeholder={t.search}
+              aria-label={t.search}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -345,433 +588,394 @@ export function CleanupView({
             />
             {search && (
               <button
-                className="clear-search"
+                type="button"
                 onClick={() => setSearch("")}
-                title="Borrar búsqueda"
+                aria-label={t.clearSearch}
+                title={t.clearSearch}
               >
-                ×
+                <CloseIcon />
               </button>
             )}
-          </div>
+          </label>
 
           <button
-            className={`hw-btn ${ageFilter === "older24h" ? "active-filter" : ""}`}
-            onClick={() => setAgeFilter((prev) => (prev === "older24h" ? "all" : "older24h"))}
-            title="Mostrar solo archivos con más de 24 horas"
+            type="button"
+            className="cl-chip"
+            aria-pressed={onlyOlder}
+            onClick={() => {
+              setOnlyOlder((v) => !v);
+              setCurrentPage(1);
+            }}
           >
-            {ageFilter === "older24h" ? "✓ Solo > 24 h" : "Filtro > 24 h"}
+            {t.older}
           </button>
 
-          <button
-            className="hw-btn"
-            onClick={selectOlderThan24h}
-            title="Seleccionar archivos seguros para eliminar"
-          >
-            Seleccionar &gt; 24h
-          </button>
+          <span className="cl-sep" aria-hidden="true" />
 
-          <button
-            className="hw-btn"
-            onClick={selectAll}
-            title="Seleccionar todos los archivos detectados"
-          >
-            Seleccionar todo
+          <button type="button" className="cl-link" onClick={selectSafe}>
+            {t.selectSafe}
           </button>
-
-          <button
-            className="hw-btn"
-            onClick={deselectAll}
-            title="Deseleccionar todos los archivos"
-          >
-            Deseleccionar
+          <button type="button" className="cl-link" onClick={selectAll}>
+            {t.selectAll}
           </button>
-
-          <button
-            className="secondary-button hw-btn"
-            onClick={onPreview}
-            disabled={busy}
-            title="Escanear y actualizar lista de archivos"
-          >
-            <Icon name="refresh" size={14} />
-            {busy ? "Analizando…" : "Analizar"}
+          <button type="button" className="cl-link" onClick={selectNone}>
+            {t.selectNone}
           </button>
         </div>
       </div>
 
-      {/* Main File Table Surface */}
-      <article className="hw-card cleanup-table-card">
-        <header className="hw-card-header cleanup-card-header">
-          <div className="hw-header-title">
-            <span className="hw-icon-badge orange">
-              <Icon name="trash" size={16} />
-            </span>
-            <div>
-              <h3>
-                {language === "en"
-                  ? "Files detected for deletion"
-                  : "Archivos detectados para eliminación"}
-              </h3>
-              <small>
-                {filteredFiles.length}{" "}
-                {language === "en" ? "matching files" : "archivos coincidentes"} ·{" "}
-                {selectedFileIds.size} {language === "en" ? "selected" : "seleccionados"} (
-                {formatBytes(selectedBytes)})
-              </small>
-            </div>
+      {/* Tabla */}
+      <section className="cl-card">
+        {items === undefined && !busy ? (
+          <div className="cl-empty">
+            <Icon name="refresh" size={28} />
+            <p>{t.emptyIdle}</p>
+            <button type="button" className="cl-btn" onClick={onPreview}>
+              {t.analyze}
+            </button>
           </div>
-
-          <div className="cleanup-header-stats">
-            <span className="cleanup-showing-badge mono">
-              {filteredFiles.length === 0
-                ? "0 - 0"
-                : `${(validCurrentPage - 1) * pageSize + 1} - ${Math.min(
-                    validCurrentPage * pageSize,
-                    filteredFiles.length,
-                  )} de ${filteredFiles.length}`}
-            </span>
+        ) : busy && !hasData ? (
+          <div className="cl-empty">
+            <span className="cl-spinner" role="status" />
+            <p>{t.scanning}</p>
           </div>
-        </header>
-
-        <div className="hw-card-body cleanup-table-container">
-          {items === undefined && !busy ? (
-            <div className="empty-state">
-              <Icon name="refresh" size={32} />
-              <p>Pulsa «Analizar» para escanear archivos temporales y consultar la Papelera.</p>
-              <button className="primary-button" onClick={onPreview}>
-                <Icon name="refresh" size={15} />
-                Analizar ahora
+        ) : filteredFiles.length === 0 ? (
+          <div className="cl-empty">
+            <p>{t.noMatches}</p>
+            {hasFilters && (
+              <button type="button" className="cl-btn" onClick={resetFilters}>
+                {t.resetFilters}
               </button>
-            </div>
-          ) : busy && (!items || allFiles.length === 0) ? (
-            <div className="empty-state cleanup-loading-state">
-              <span className="hardware-loading-spinner" />
-              <p>Escaneando ubicaciones del sistema y papelera de reciclaje…</p>
-            </div>
-          ) : filteredFiles.length === 0 ? (
-            <div className="empty-state">
-              <p>No se encontraron archivos que coincidan con los filtros aplicados.</p>
-              {(search || ageFilter !== "all" || activeCategory !== "all") && (
-                <button
-                  className="secondary-button"
-                  onClick={() => {
-                    setSearch("");
-                    setAgeFilter("all");
-                    setActiveCategory("all");
-                  }}
-                >
-                  Restablecer filtros
-                </button>
-              )}
-            </div>
-          ) : (
-            <table className="hw-table cleanup-table">
-              <thead>
-                <tr>
-                  <th style={{ width: "42px", textAlign: "center" }}>
-                    <input
-                      type="checkbox"
-                      className="cleanup-checkbox"
-                      checked={isAllFilteredSelected}
-                      onChange={toggleSelectAllFiltered}
-                      title="Seleccionar o deseleccionar visibles"
-                      aria-label="Seleccionar o deseleccionar visibles"
-                    />
-                  </th>
-                  <th style={{ width: "65px" }}>TIPO</th>
-                  <th
-                    style={{ width: "45%", cursor: "pointer" }}
-                    onClick={() => toggleSort("name")}
-                    title="Ordenar por nombre"
-                  >
-                    NOMBRE Y RUTA {sortField === "name" ? (sortDirection === "asc" ? "▲" : "▼") : ""}
-                  </th>
-                  <th style={{ width: "16%" }}>CATEGORÍA</th>
-                  <th
-                    style={{ width: "16%", cursor: "pointer" }}
-                    onClick={() => toggleSort("date")}
-                    title="Ordenar por fecha"
-                  >
-                    ANTIGÜEDAD {sortField === "date" ? (sortDirection === "asc" ? "▲" : "▼") : ""}
-                  </th>
-                  <th
-                    style={{ width: "15%", textAlign: "right", cursor: "pointer" }}
-                    onClick={() => toggleSort("size")}
-                    title="Ordenar por tamaño"
-                  >
-                    TAMAÑO {sortField === "size" ? (sortDirection === "asc" ? "▲" : "▼") : ""}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedFiles.map((file) => {
-                  const isSelected = selectedFileIds.has(file.id);
-                  return (
-                    <tr
-                      key={file.id}
-                      className={`cleanup-row-tr ${isSelected ? "selected-tr" : ""}`}
-                      onClick={() => toggleFile(file.id)}
-                    >
-                      <td
-                        style={{ textAlign: "center" }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <input
-                          type="checkbox"
-                          className="cleanup-checkbox"
-                          checked={isSelected}
-                          onChange={() => toggleFile(file.id)}
-                          aria-label={`Seleccionar ${file.name}`}
-                        />
-                      </td>
-
-                      <td>
-                        <span className={`file-type-badge ${file.category}`}>
-                          {file.itemType || "TMP"}
-                        </span>
-                      </td>
-
-                      <td>
-                        <div className="cleanup-file-info">
-                          <strong className="cleanup-file-name mono" title={file.name}>
-                            {file.name}
-                          </strong>
-                          <small
-                            className="cleanup-file-path mono"
-                            title={file.originalPath || file.path}
-                          >
-                            {file.originalPath ? `Origen: ${file.originalPath}` : file.path}
-                          </small>
-                        </div>
-                      </td>
-
-                      <td>
-                        <span className={`cleanup-cat-tag ${file.category}`}>
-                          {file.category === "recycle-bin"
-                            ? "Papelera"
-                            : "Temporal Usuario"}
-                        </span>
-                      </td>
-
-                      <td>
-                        <div className="cleanup-age-cell">
-                          <span
-                            className={`metric-chip ${file.isOlderThan24h ? "ok" : "warning"}`}
-                          >
-                            {file.isOlderThan24h ? "> 24 h" : "Reciente"}
-                          </span>
-                          <small className="mono">
-                            {formatDate(file.deletedAt || file.modifiedAt)}
-                          </small>
-                        </div>
-                      </td>
-
-                      <td style={{ textAlign: "right" }}>
-                        <strong className="cleanup-size-val mono">
-                          {formatBytes(file.sizeBytes)}
-                        </strong>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        {/* Pagination bar */}
-        {filteredFiles.length > pageSize && (
-          <div className="cleanup-pagination-bar">
-            <div className="cleanup-page-controls">
-              <button
-                className="hw-btn"
-                disabled={validCurrentPage <= 1}
-                onClick={() => setCurrentPage(1)}
-                title="Primera página"
-              >
-                ««
-              </button>
-              <button
-                className="hw-btn"
-                disabled={validCurrentPage <= 1}
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              >
-                Anterior
-              </button>
-              <span className="cleanup-page-indicator mono">
-                Página {validCurrentPage} de {totalPages}
+            )}
+          </div>
+        ) : (
+          <>
+            <div className="cl-strip">
+              <span className="cl-label">{t.stripTitle}</span>
+              <span className="cl-label cl-num">
+                {t.selCount(selection.list.length, locale)}
               </span>
-              <button
-                className="hw-btn"
-                disabled={validCurrentPage >= totalPages}
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              >
-                Siguiente
-              </button>
-              <button
-                className="hw-btn"
-                disabled={validCurrentPage >= totalPages}
-                onClick={() => setCurrentPage(totalPages)}
-                title="Última página"
-              >
-                »»
-              </button>
+            </div>
+            <div className="cl-scroll">
+              <table className="cl-table">
+                <thead>
+                  <tr>
+                    <th className="cl-col-check">
+                      <input
+                        type="checkbox"
+                        className="cl-check"
+                        checked={allFilteredSelected}
+                        onChange={toggleFiltered}
+                        aria-label={t.selectVisible}
+                        title={t.selectVisible}
+                      />
+                    </th>
+                    <th className="cl-col-type">{t.colType}</th>
+                    <th {...sortProps("name")}>
+                      {sortButton("name", t.colName)}
+                    </th>
+                    <th className="cl-col-cat">{t.colCat}</th>
+                    <th className="cl-col-age" {...sortProps("date")}>
+                      {sortButton("date", t.colAge)}
+                    </th>
+                    <th className="cl-col-size" {...sortProps("size")}>
+                      {sortButton("size", t.colSize)}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pageFiles.map((file) => {
+                    const selected = selectedFileIds.has(file.id);
+                    const fullPath = file.originalPath || file.path;
+                    return (
+                      <tr
+                        key={file.id}
+                        aria-selected={selected}
+                        onClick={() => toggleFile(file.id)}
+                      >
+                        <td
+                          className="cl-col-check"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            type="checkbox"
+                            className="cl-check"
+                            checked={selected}
+                            onChange={() => toggleFile(file.id)}
+                            aria-label={t.selectRow(file.name)}
+                          />
+                        </td>
+                        <td className="cl-col-type">
+                          <span className={`cl-type ${file.category}`}>
+                            {file.itemType || "TMP"}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="cl-file">
+                            <strong className="cl-mono" title={file.name}>
+                              {file.name}
+                            </strong>
+                            <small className="cl-mono" title={fullPath}>
+                              <bdi>
+                                {file.originalPath
+                                  ? `${t.origin}: ${file.originalPath}`
+                                  : file.path}
+                              </bdi>
+                            </small>
+                          </div>
+                        </td>
+                        <td className="cl-col-cat">
+                          <span className="cl-pill">
+                            <span
+                              className={`cl-dot ${file.category === "recycle-bin" ? "bin" : "temp"}`}
+                            />
+                            {file.category === "recycle-bin"
+                              ? t.binTab
+                              : t.tempTab}
+                          </span>
+                        </td>
+                        <td className="cl-col-age">
+                          <div className="cl-age">
+                            {!file.isOlderThan24h && (
+                              <span className="cl-recent">{t.recent}</span>
+                            )}
+                            <span className="cl-num">
+                              {formatDate(
+                                file.deletedAt || file.modifiedAt,
+                                locale,
+                              )}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="cl-col-size">
+                          <span className="cl-size cl-mono cl-num">
+                            {formatBytes(file.sizeBytes)}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
 
-            <div className="cleanup-page-size-selector">
-              <span className="cleanup-size-label">Por página:</span>
-              {[50, 100, 250].map((size) => (
+            <div className="cl-foot">
+              <span className="cl-num">
+                {t.range(rangeStart, rangeEnd, filteredFiles.length, locale)}
+              </span>
+              <div className="cl-pager">
                 <button
-                  key={size}
-                  className={`hw-btn ${pageSize === size ? "active-filter" : ""}`}
-                  onClick={() => {
-                    setPageSize(size);
+                  type="button"
+                  className="cl-btn"
+                  disabled={page <= 1}
+                  onClick={() => setCurrentPage(page - 1)}
+                >
+                  {t.prev}
+                </button>
+                <span className="cl-num">{t.page(page, totalPages)}</span>
+                <button
+                  type="button"
+                  className="cl-btn"
+                  disabled={page >= totalPages}
+                  onClick={() => setCurrentPage(page + 1)}
+                >
+                  {t.next}
+                </button>
+              </div>
+              <label>
+                {t.perPage}{" "}
+                <select
+                  className="cl-select"
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
                     setCurrentPage(1);
                   }}
                 >
-                  {size}
-                </button>
-              ))}
+                  {[50, 100, 250].map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
-          </div>
+          </>
         )}
-      </article>
+      </section>
 
-      {/* Floating Action / Summary Panel */}
-      <div className="cleanup-action-dock surface">
-        <div className="cleanup-dock-summary">
-          <div className="cleanup-dock-metric">
-            <span className="section-kicker">SELECCIÓN ACTUAL</span>
-            <div className="cleanup-dock-numbers">
-              <strong className="mono">{formatBytes(selectedBytes)}</strong>
-              <small>
-                {selectedFileIds.size} de {allFiles.length}{" "}
-                {language === "en" ? "files selected" : "archivos seleccionados"}
-              </small>
-            </div>
-          </div>
+      <p className="cl-note">{t.footnote}</p>
 
-          <div className="cleanup-dock-feedback">
-            {message && (
-              <div className="cleanup-feedback success-banner" role="status">
-                <Icon name="check" size={16} />
-                <span>{message}</span>
-              </div>
-            )}
-            {error && (
-              <div className="cleanup-feedback error-banner" role="alert">
-                <Icon name="alert" size={16} />
-                <span>{error}</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="cleanup-dock-actions">
-          <button
-            className="danger-button cleanup-execute-button"
-            onClick={() => setConfirmModalOpen(true)}
-            disabled={busy || selectedFileIds.size === 0}
-          >
-            <Icon name="trash" size={16} />
-            <span>
-              {busy
-                ? language === "en"
-                  ? "Deleting..."
-                  : "Eliminando…"
-                : language === "en"
-                  ? `Clean selected (${formatBytes(selectedBytes)})`
-                  : `Limpiar seleccionados (${formatBytes(selectedBytes)})`}
+      {/* Barra de acción fija */}
+      <div className={`cl-dock ${selection.list.length > 0 ? "armed" : ""}`}>
+        <div className="cl-sel">
+          <div className="cl-sel-main">
+            <span className="cl-label">
+              <i
+                className={`cl-led ${selection.list.length > 0 ? "on" : ""}`}
+                aria-hidden="true"
+              />
+              {selection.list.length > 0 ? t.armed : t.idle}
             </span>
-          </button>
-        </div>
-      </div>
-
-      {/* Industrial Safety Note */}
-      <div className="safety-note cleanup-safety-note">
-        <Icon name="shield" size={20} />
-        <div>
-          <strong>Protección activa y control granular.</strong>
-          <span>
-            {" "}Solo se eliminarán los archivos marcados en la tabla superior. Los temporales en uso
-            por Windows o por aplicaciones abiertas se omitirán de forma segura sin interrumpir procesos.
-            Los elementos de la papelera seleccionados se purgarán definitivamente.
-          </span>
-        </div>
-      </div>
-
-      {/* Industrial Confirmation Modal */}
-      {confirmModalOpen && (
-        <div className="cleanup-modal-overlay" role="dialog" aria-modal="true">
-          <div className="cleanup-modal-card hw-card">
-            <header className="cleanup-modal-header">
-              <span className="hw-icon-badge red">
-                <Icon name="alert" size={18} />
+            <div className="cl-sel-read">
+              <strong className="cl-mono cl-num">
+                {formatBytes(selection.bytes)}
+              </strong>
+              <span className="cl-num">
+                {t.itemsOf(selection.list.length, allFiles.length, locale)}
               </span>
-              <div>
-                <h3>Confirmar purga permanente</h3>
-                <small>Esta acción no se puede deshacer</small>
-              </div>
-              <button
-                className="cleanup-modal-close"
-                onClick={() => setConfirmModalOpen(false)}
-              >
-                ×
-              </button>
-            </header>
+            </div>
+          </div>
+          {message && (
+            <div className="cl-banner ok" role="status">
+              <Icon name="check" size={15} />
+              <span>{message}</span>
+            </div>
+          )}
+          {error && (
+            <div className="cl-banner err" role="alert">
+              <Icon name="alert" size={15} />
+              <span>{error}</span>
+            </div>
+          )}
+        </div>
+        <button
+          type="button"
+          className="cl-btn cl-btn-danger cl-btn-lg"
+          onClick={() => setConfirmOpen(true)}
+          disabled={busy || selection.list.length === 0}
+        >
+          <Icon name="trash" size={16} />
+          {busy
+            ? t.cleaning
+            : selection.list.length === 0
+              ? t.selectToClean
+              : t.clean(formatBytes(selection.bytes))}
+        </button>
+      </div>
 
-            <div className="cleanup-modal-body">
-              <p className="cleanup-modal-text">
-                Estás a punto de eliminar de forma irreversible los siguientes elementos de tu equipo:
-              </p>
-
-              <div className="cleanup-modal-breakdown">
-                <div className="breakdown-row">
-                  <span>Archivos temporales seleccionados:</span>
-                  <strong className="mono">
-                    {selectedTempCount} ({formatBytes(selectedTempBytes)})
-                  </strong>
-                </div>
-                <div className="breakdown-row">
-                  <span>Elementos de papelera seleccionados:</span>
-                  <strong className="mono">
-                    {selectedBinCount} ({formatBytes(selectedBinBytes)})
-                  </strong>
-                </div>
-                <div className="breakdown-row total-row">
-                  <span>Espacio total a liberar:</span>
-                  <strong className="mono cleanup-total-text">
-                    {formatBytes(selectedBytes)}
-                  </strong>
-                </div>
-              </div>
-
-              <div className="cleanup-modal-warning">
-                <Icon name="shield" size={16} />
-                <span>
-                  Los archivos bloqueados por el sistema operativo o aplicaciones en ejecución
-                  serán omitidos automáticamente por seguridad.
+      {/* Popup de confirmación */}
+      {confirmOpen && (
+        <div
+          className="cl-overlay"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setConfirmOpen(false);
+          }}
+        >
+          <div
+            className="cl-modal"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="cl-modal-title"
+            aria-describedby="cl-modal-desc"
+          >
+            <div className="cl-modal-top">
+              <div className="cl-modal-head">
+                <span className="cl-modal-icon">
+                  <Icon name="trash" size={20} />
                 </span>
+                <span className="cl-label cl-danger">{t.irreversible}</span>
               </div>
+              <h2 id="cl-modal-title">
+                {t.modalTitle(t.files(selection.list.length, locale))}
+              </h2>
+              <p id="cl-modal-desc">
+                {t.modalFree(formatBytes(selection.bytes))}
+              </p>
             </div>
 
-            <footer className="cleanup-modal-footer">
+            <div className="cl-modal-body">
+              <div className="cl-rows">
+                {selection.tempCount > 0 && (
+                  <div className="cl-row">
+                    <span className="cl-row-ico temp">
+                      <Icon name="sparkles" size={16} />
+                    </span>
+                    <span className="cl-row-text">
+                      {t.temp}
+                      <em>{t.modalTempNote}</em>
+                    </span>
+                    <b className="cl-num">
+                      {t.files(selection.tempCount, locale)} ·{" "}
+                      {formatBytes(selection.tempBytes)}
+                    </b>
+                  </div>
+                )}
+                {selection.binCount > 0 && (
+                  <div className="cl-row">
+                    <span className="cl-row-ico bin">
+                      <Icon name="trash" size={16} />
+                    </span>
+                    <span className="cl-row-text">
+                      {t.bin}
+                      <em>{t.modalBinNote}</em>
+                    </span>
+                    <b className="cl-num">
+                      {t.files(selection.binCount, locale)} ·{" "}
+                      {formatBytes(selection.binBytes)}
+                    </b>
+                  </div>
+                )}
+              </div>
+
+              {largestSelected.length > 0 && (
+                <div className="cl-top">
+                  <h3>{t.largest}</h3>
+                  <ul>
+                    {largestSelected.map((f) => (
+                      <li key={f.id}>
+                        <span
+                          className="cl-mono"
+                          title={f.originalPath || f.path}
+                        >
+                          {f.name}
+                        </span>
+                        <span className="cl-mono cl-num">
+                          {formatBytes(f.sizeBytes)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  {selection.list.length > largestSelected.length && (
+                    <span className="more">
+                      {t.andMore(
+                        selection.list.length - largestSelected.length,
+                        locale,
+                      )}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {selection.recentCount > 0 && (
+                <div className="cl-warn">
+                  <Icon name="alert" size={15} />
+                  <span>{t.recentWarn(selection.recentCount, locale)}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="cl-modal-foot">
               <button
-                className="secondary-button"
-                onClick={() => setConfirmModalOpen(false)}
+                ref={cancelRef}
+                type="button"
+                className="cl-btn cl-btn-lg"
+                onClick={() => setConfirmOpen(false)}
               >
-                Cancelar
+                {t.cancel}
               </button>
               <button
-                className="danger-button"
+                type="button"
+                className="cl-btn cl-btn-danger cl-btn-lg"
                 onClick={handleExecuteClean}
               >
                 <Icon name="trash" size={15} />
-                Confirmar eliminación ({formatBytes(selectedBytes)})
+                {t.confirm}
               </button>
-            </footer>
+            </div>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

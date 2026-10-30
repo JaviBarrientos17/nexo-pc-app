@@ -79,14 +79,17 @@ export function App() {
   const [cpuHistory, setCpuHistory] = useState<number[]>([]);
   const [hardware, setHardware] = useState<HardwareReport>();
   const [section, setSection] = useState("Resumen");
-  const [hardwareCategory, setHardwareCategory] = useState<CategoryFilter>("all");
+  const [hardwareCategory, setHardwareCategory] =
+    useState<CategoryFilter>("all");
   const [sectionHistory, setSectionHistory] = useState(["Resumen"]);
   const [historyIndex, setHistoryIndex] = useState(0);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [language, setLanguage] = useState<Language>(() =>
     getInitialLanguage(
       localStorage.getItem("nexo-language-preference"),
-      navigator.languages.length > 0 ? navigator.languages : [navigator.language],
+      navigator.languages.length > 0
+        ? navigator.languages
+        : [navigator.language],
     ),
   );
   const [theme, setTheme] = useState<"light" | "dark">(() =>
@@ -206,7 +209,8 @@ export function App() {
   useEffect(() => {
     let active = true;
     let timer = 0;
-    const refreshInterval = navigator.hardwareConcurrency <= 4 ? 30_000 : 15_000;
+    const refreshInterval =
+      navigator.hardwareConcurrency <= 4 ? 30_000 : 15_000;
     const scheduleRefresh = () => {
       if (!active || document.visibilityState !== "visible") return;
       timer = window.setTimeout(() => void refresh(), refreshInterval);
@@ -606,7 +610,11 @@ export function App() {
 
   const page =
     section === "Hardware" ? (
-      <HardwareMonitor report={hardware} onRefresh={loadData} initialCategory={hardwareCategory} />
+      <HardwareMonitor
+        report={hardware}
+        onRefresh={loadData}
+        initialCategory={hardwareCategory}
+      />
     ) : section === "Unidades" ? (
       <DrivesView report={hardware} />
     ) : section === "Salud del sistema" ? (
@@ -695,13 +703,19 @@ export function App() {
         {page}
       </AppShell>
       {(isOpeningHardware || (!hardware && !dataError)) && (
-        <div className="hardware-loading-overlay" role="status" aria-live="polite">
+        <div
+          className="hardware-loading-overlay"
+          role="status"
+          aria-live="polite"
+        >
           <div className="hardware-loading-card">
             <span className="hardware-loading-spinner" aria-hidden="true" />
-            <span>Cargando datos…</span>
+            <span>{translateText("Cargando datos…", language)}</span>
           </div>
         </div>
       )}
     </>
   );
 }
+
+// TODO - REVISAR CON AGY O COPILOT QUE TODOS LOS TEXTOS DE LA APP SE TRADUZCAN AL CAMBIAR EL IDIOMA DE LA APP, INCLUIDOS LOS MENSAJES DE ERROR Y LOS TEXTOS DE EXPORTACIÓN.

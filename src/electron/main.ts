@@ -197,6 +197,8 @@ function getAppIconPath(): string {
     : path.join(__dirname, "../../assets/icon.png");
 }
 
+// TODO - MEJORAR ESTILOS SECCIÓN DE LIMPIEZA Y POPUP DE CONFIRMAR ELIMINAR ARCHIVOS
+
 function createWindow() {
   const iconPath = getAppIconPath();
   mainWindow = new BrowserWindow({
